@@ -14,12 +14,12 @@
 // par steamId — on boucle, avec un cache 24h dans Netlify Blobs pour
 // limiter les appels répétés à chaque chargement de page.
 
-import { getStore } from "@netlify/blobs";
+import { getBlobStore } from "./_lib/blobStore.js";
 
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
 function cache() {
-  return getStore("faceit-cache");
+  return getBlobStore("faceit-cache");
 }
 
 export const handler = async (event) => {

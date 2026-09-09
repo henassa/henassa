@@ -10,8 +10,7 @@ export const siteName = "henassa";
 
 export const navLinks = [
   { to: "/", label: "Accueil" },
-  { to: "/top100", label: "Chroniques" },
-  { to: "/tierlists", label: "Sélections" },
+  { to: "/selections", label: "Sélections" },
   { to: "/customs", label: "Customs CS2" },
   { to: "/live", label: "Live Match" },
   { to: "/veto", label: "Veto" },

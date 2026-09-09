@@ -35,7 +35,7 @@
 //     déclencher d'appels cross-origin vers cette fonction depuis le
 //     navigateur d'un visiteur.
 
-import { getStore } from "@netlify/blobs";
+import { getBlobStore } from "./_lib/blobStore.js";
 import crypto from "node:crypto";
 
 const TURN_SECONDS = 30;
@@ -90,11 +90,11 @@ function safeEqual(a, b) {
 }
 
 function store() {
-  return getStore("veto-sessions");
+  return getBlobStore("veto-sessions");
 }
 
 function metaStore() {
-  return getStore("veto-meta");
+  return getBlobStore("veto-meta");
 }
 
 async function checkLockout() {

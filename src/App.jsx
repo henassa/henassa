@@ -1,8 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
-import Top100 from "./pages/Top100";
-import Tierlists from "./pages/Tierlists";
+import Selections from "./pages/Selections";
 import TierlistDetail from "./pages/TierlistDetail";
 import Customs from "./pages/Customs";
 import LiveMatch from "./pages/LiveMatch";
@@ -18,8 +17,7 @@ export default function App() {
       <Layout>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/top100" element={<Top100 />} />
-          <Route path="/tierlists" element={<Tierlists />} />
+          <Route path="/tierlists" element={<Selections />} />
           <Route path="/tierlists/:id" element={<TierlistDetail />} />
           <Route path="/customs" element={<Customs />} />
           <Route path="/live" element={<LiveMatch />} />

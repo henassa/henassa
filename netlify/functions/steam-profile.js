@@ -20,12 +20,12 @@
 //   - Sans clé configurée, la fonction répond avec un objet vide pour
 //     chaque steamId plutôt que de planter la page.
 
-import { getStore } from "@netlify/blobs";
+import { getBlobStore } from "./_lib/blobStore.js";
 
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
 function cache() {
-  return getStore("steam-cache");
+  return getBlobStore("steam-cache");
 }
 
 export const handler = async (event) => {

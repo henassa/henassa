@@ -29,14 +29,14 @@
 // bien été appliquée (matchzy_remote_log_url sans argument pour la
 // lire), et regarde les logs serveur au moment d'un round_end.
 
-import { getStore } from "@netlify/blobs";
+import { getBlobStore } from "./_lib/blobStore.js";
 import crypto from "node:crypto";
 
 const KEY = "current";
 const MAX_HISTORY = 300;
 
 function store() {
-  return getStore("live-match");
+  return getBlobStore("live-match");
 }
 
 function safeEqual(a, b) {
