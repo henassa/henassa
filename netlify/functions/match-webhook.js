@@ -56,11 +56,6 @@ function extractScore(teamObj) {
   return teamObj.score ?? teamObj.stats?.score ?? teamObj.seriesScore ?? null;
 }
 
-function extractName(teamObj) {
-  if (!teamObj) return null;
-  return teamObj.name ?? teamObj.team?.name ?? null;
-}
-
 function applyEvent(state, body) {
   const eventName = body?.event || "unknown";
 
@@ -72,8 +67,8 @@ function applyEvent(state, body) {
   if (eventName === "series_start") {
     state.summary = {
       status: "live",
-      team1Name: extractName(body.team1) || "Team 1",
-      team2Name: extractName(body.team2) || "Team 2",
+      team1Name: body.team1?.name || "Team 1",
+      team2Name: body.team2?.name || "Team 2",
       team1Score: 0,
       team2Score: 0,
       numMaps: body.num_maps ?? null,
@@ -81,13 +76,24 @@ function applyEvent(state, body) {
     };
   }
 
-  if (eventName === "round_end") {
-    if (!state.summary) state.summary = { status: "live", team1Name: "Team 1", team2Name: "Team 2" };
+  if (eventName === "round_end" || eventName === "map_result") {
+    if (!state.summary) {
+      state.summary = { status: "live", team1Name: "Team 1", team2Name: "Team 2", team1Score: 0, team2Score: 0 };
+    }
+    // Les noms d'équipe sont envoyés à chaque round_end (pas seulement
+    // à series_start, qui n'arrive pas en mode scrim/pug sans vrai
+    // lancement de série) — on les met à jour à chaque fois qu'ils sont
+    // présents dans le payload.
+    if (body.team1?.name) state.summary.team1Name = body.team1.name;
+    if (body.team2?.name) state.summary.team2Name = body.team2.name;
+
     const s1 = extractScore(body.team1);
     const s2 = extractScore(body.team2);
     state.summary.team1Score = s1 ?? state.summary.team1Score ?? 0;
     state.summary.team2Score = s2 ?? state.summary.team2Score ?? 0;
-    state.summary.roundsPlayed = state.history.filter((h) => h.event === "round_end").length;
+    // `round_number` est envoyé directement dans le payload, plus fiable
+    // que de recompter les events round_end reçus.
+    state.summary.roundsPlayed = body.round_number ?? state.history.filter((h) => h.event === "round_end").length;
     state.summary.status = "live";
   }
 
@@ -121,6 +127,29 @@ export const handler = async (event) => {
       }
       await store().setJSON(KEY, { history: [], summary: null });
       return { statusCode: 200, headers, body: JSON.stringify({ ok: true }) };
+    }
+
+    // Opération de mise à jour manuelle (admin) — un scoreboard tenu à
+    // la main, sans dépendre du webhook MatchZy.
+    if (body.op === "manual_set") {
+      if (!safeEqual(body.passcode, process.env.VETO_ADMIN_PASSCODE)) {
+        return { statusCode: 403, headers, body: JSON.stringify({ error: "mot de passe incorrect" }) };
+      }
+      const state = (await store().get(KEY, { type: "json" })) || { history: [], summary: null };
+      state.summary = {
+        status: body.status === "done" ? "done" : "live",
+        team1Name: body.team1Name || "Team 1",
+        team2Name: body.team2Name || "Team 2",
+        team1Score: Number(body.team1Score) || 0,
+        team2Score: Number(body.team2Score) || 0,
+        mapName: body.mapName || null,
+        roundsPlayed: (Number(body.team1Score) || 0) + (Number(body.team2Score) || 0),
+        manual: true,
+      };
+      state.history.push({ event: "manual_update", at: Date.now(), payload: state.summary });
+      if (state.history.length > MAX_HISTORY) state.history = state.history.slice(-MAX_HISTORY);
+      await store().setJSON(KEY, state);
+      return { statusCode: 200, headers, body: JSON.stringify(state) };
     }
 
     // Sinon : un event envoyé par MatchZy. Vérifie le secret si configuré.
