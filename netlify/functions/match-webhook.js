@@ -50,18 +50,24 @@ function extractScore(teamObj) {
 
 // Transforme la liste de joueur·ses d'une équipe (telle qu'envoyée dans
 // team1.players/team2.players à chaque round_end) en lignes de
-// scoreboard K/D/A lisibles.
+// scoreboard K/D/A/ADR lisibles. L'ADR est calculé (dégâts cumulés /
+// rounds joués) car MatchZy n'envoie pas de champ ADR tout fait.
 function extractPlayers(teamObj) {
   if (!teamObj?.players) return null;
-  return teamObj.players.map((p) => ({
-    steamid: p.steamid,
-    name: p.name,
-    kills: p.stats?.kills ?? 0,
-    deaths: p.stats?.deaths ?? 0,
-    assists: p.stats?.assists ?? 0,
-    headshotKills: p.stats?.headshot_kills ?? 0,
-    mvp: p.stats?.mvp ?? 0,
-  }));
+  return teamObj.players.map((p) => {
+    const rounds = p.stats?.rounds_played || 0;
+    const damage = p.stats?.damage ?? 0;
+    return {
+      steamid: p.steamid,
+      name: p.name,
+      kills: p.stats?.kills ?? 0,
+      deaths: p.stats?.deaths ?? 0,
+      assists: p.stats?.assists ?? 0,
+      headshotKills: p.stats?.headshot_kills ?? 0,
+      mvp: p.stats?.mvp ?? 0,
+      adr: rounds > 0 ? Math.round((damage / rounds) * 10) / 10 : 0,
+    };
+  });
 }
 
 function applyEvent(state, body) {
@@ -108,8 +114,18 @@ function applyEvent(state, body) {
     if (p2) state.summary.team2Players = p2;
 
     // Un round vient de se terminer : la bombe (si posée) n'est plus
-    // d'actualité.
+    // d'actualité, et on note qui a gagné ce round pour le strip
+    // visuel. On ne tente pas de deviner la raison exacte (bombe /
+    // élimination / temps) car le code `reason` envoyé par MatchZy n'a
+    // pas de correspondance documentée fiable — juste qui a gagné.
     state.bombStatus = null;
+    if (eventName === "round_end" && body.winner?.team) {
+      state.summary.roundHistory ??= [];
+      const already = state.summary.roundHistory.some((r) => r.round === body.round_number);
+      if (!already) {
+        state.summary.roundHistory.push({ round: body.round_number, winner: body.winner.team });
+      }
+    }
   }
 
   if (eventName === "round_start") {
@@ -122,6 +138,22 @@ function applyEvent(state, body) {
 
   if (eventName === "bomb_defused") {
     state.bombStatus = { defused: true, site: body.site || null, at: Date.now() };
+  }
+
+  // Snapshot argent/armure/kit de désamorçage pris à la fin du temps
+  // d'achat — reste affiché tel quel jusqu'au freezetime_end suivant
+  // (l'argent dépensé en cours de round n'est pas suivi en direct).
+  if (eventName === "freezetime_end" && Array.isArray(body.players)) {
+    state.summary ??= { status: "live", team1Name: "Team 1", team2Name: "Team 2", team1Score: 0, team2Score: 0 };
+    state.summary.playerMeta ??= {};
+    for (const p of body.players) {
+      state.summary.playerMeta[p.steamid] = {
+        money: p.money ?? null,
+        armor: p.armor ?? null,
+        hasHelmet: !!p.has_helmet,
+        hasDefuser: !!p.has_defuser,
+      };
+    }
   }
 
   if (eventName === "player_death") {

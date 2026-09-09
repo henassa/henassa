@@ -13,7 +13,45 @@ function weaponLabel(weapon) {
   return WEAPON_LABELS[weapon] || weapon.replace(/^weapon_/, "");
 }
 
-function ScoreboardTable({ teamName, players }) {
+// Bande de rounds : un carré par round joué, rempli si l'équipe l'a
+// gagné, vide sinon. Pas d'icône bombe/élimination/temps — le code
+// `reason` envoyé par MatchZy n'a pas de correspondance fiable connue,
+// donc on affiche seulement qui a gagné, pas comment.
+function RoundStrip({ roundHistory }) {
+  if (!roundHistory || roundHistory.length === 0) return null;
+  return (
+    <div className="mt-3 flex flex-wrap gap-1">
+      {roundHistory.map((r) => (
+        <span
+          key={r.round}
+          title={`round ${r.round} — ${r.winner === "team1" ? "équipe 1" : "équipe 2"}`}
+          className="flex h-4 w-4 items-center justify-center text-[9px]"
+          style={{
+            border: "1px solid var(--color-text)",
+            background: r.winner === "team1" ? "var(--color-text)" : "transparent",
+            color: r.winner === "team1" ? "var(--color-bg)" : "var(--color-text)",
+          }}
+        >
+          {r.winner === "team2" ? "·" : ""}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function ArmorBar({ value }) {
+  if (value == null) return <span className="text-muted">—</span>;
+  return (
+    <div className="flex items-center gap-1.5">
+      <div className="h-2 w-12 border border-border">
+        <div className="h-full bg-text" style={{ width: `${Math.min(100, value)}%` }} />
+      </div>
+      <span className="text-[10px] text-muted">{value}</span>
+    </div>
+  );
+}
+
+function ScoreboardTable({ teamName, players, playerMeta }) {
   if (!players || players.length === 0) {
     return (
       <div>
@@ -26,28 +64,44 @@ function ScoreboardTable({ teamName, players }) {
   const sorted = [...players].sort((a, b) => b.kills - a.kills);
 
   return (
-    <div>
+    <div className="overflow-x-auto">
       <p className="text-xs font-bold">{teamName}</p>
-      <table className="mt-2 w-full text-xs">
+      <table className="mt-2 w-full min-w-[420px] text-xs">
         <thead>
           <tr className="border-b border-border text-muted">
             <th className="py-1 text-left">joueur·se</th>
+            <th className="py-1 text-right">$</th>
+            <th className="py-1 text-left">armure</th>
+            <th className="py-1 text-center">kit</th>
             <th className="py-1 text-right">K</th>
-            <th className="py-1 text-right">D</th>
             <th className="py-1 text-right">A</th>
-            <th className="py-1 text-right">HS</th>
+            <th className="py-1 text-right">D</th>
+            <th className="py-1 text-right">ADR</th>
           </tr>
         </thead>
         <tbody>
-          {sorted.map((p) => (
-            <tr key={p.steamid} className="border-b border-border last:border-b-0">
-              <td className="py-1">{p.name}</td>
-              <td className="py-1 text-right">{p.kills}</td>
-              <td className="py-1 text-right">{p.deaths}</td>
-              <td className="py-1 text-right">{p.assists}</td>
-              <td className="py-1 text-right">{p.headshotKills}</td>
-            </tr>
-          ))}
+          {sorted.map((p) => {
+            const meta = playerMeta?.[p.steamid];
+            return (
+              <tr key={p.steamid} className="border-b border-border last:border-b-0">
+                <td className="py-1">
+                  {p.name}
+                  {p.mvp > 0 && <span className="text-muted"> ★{p.mvp}</span>}
+                </td>
+                <td className="py-1 text-right text-muted">
+                  {meta?.money != null ? meta.money : "—"}
+                </td>
+                <td className="py-1">
+                  <ArmorBar value={meta?.armor ?? null} />
+                </td>
+                <td className="py-1 text-center">{meta?.hasDefuser ? "✓" : ""}</td>
+                <td className="py-1 text-right">{p.kills}</td>
+                <td className="py-1 text-right">{p.assists}</td>
+                <td className="py-1 text-right">{p.deaths}</td>
+                <td className="py-1 text-right">{p.adr}</td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
@@ -124,6 +178,8 @@ export default function LiveMatch() {
               <span>{summary.team2Name}</span>
             </div>
 
+            <RoundStrip roundHistory={summary.roundHistory} />
+
             {bombStatus && (
               <p className="mt-2 text-xs">
                 {bombStatus.defused
@@ -134,9 +190,17 @@ export default function LiveMatch() {
           </div>
 
           {(summary.team1Players || summary.team2Players) && (
-            <div className="mt-6 grid gap-6 sm:grid-cols-2">
-              <ScoreboardTable teamName={summary.team1Name} players={summary.team1Players} />
-              <ScoreboardTable teamName={summary.team2Name} players={summary.team2Players} />
+            <div className="mt-6 space-y-6">
+              <ScoreboardTable
+                teamName={summary.team1Name}
+                players={summary.team1Players}
+                playerMeta={summary.playerMeta}
+              />
+              <ScoreboardTable
+                teamName={summary.team2Name}
+                players={summary.team2Players}
+                playerMeta={summary.playerMeta}
+              />
             </div>
           )}
 
