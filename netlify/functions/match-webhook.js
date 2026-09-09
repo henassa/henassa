@@ -14,26 +14,20 @@
 //   VETO_ADMIN_PASSCODE — réutilisé ici pour l'opération "reset"
 //     (même mot de passe admin que le veto).
 //
-// NOTE DE FIABILITÉ : les noms d'events (round_end, map_result,
-// series_start, series_end) viennent du code source public de MatchZy,
-// mais la structure exacte des champs peut varier selon la version du
-// plugin. Le flux d'events brut (`history`) est TOUJOURS fidèle à ce
-// que MatchZy envoie. Le `summary` (score affiché en gros) est calculé
-// en best-effort à partir de plusieurs noms de champs plausibles — s'il
-// affiche un score qui a l'air faux, il faut regarder un event brut
-// capturé en vrai pour ajuster l'extraction.
-//
-// Connu : matchzy_remote_log_url a eu des bugs de prise en compte via
-// rcon dans certaines versions (issue GitHub #369) — si rien n'arrive
-// ici après config, vérifie dans la console du serveur que la valeur a
-// bien été appliquée (matchzy_remote_log_url sans argument pour la
-// lire), et regarde les logs serveur au moment d'un round_end.
+// NOTE DE FIABILITÉ : structure confirmée par un vrai payload capturé
+// (round_end avec team1/team2.{name,score,players[].stats}, player_death
+// avec attacker_name/victim_name/weapon/headshot, bomb_planted avec
+// site). Si un jour le score ou les noms ont l'air faux, regarde un
+// event brut sur cette même URL (GET) pour ajuster.
 
 import { getBlobStore } from "./_lib/blobStore.js";
 import crypto from "node:crypto";
 
 const KEY = "current";
 const MAX_HISTORY = 300;
+const MAX_KILLFEED = 20;
+
+const EMPTY_STATE = { history: [], summary: null, killFeed: [], bombStatus: null };
 
 function store() {
   return getBlobStore("live-match");
@@ -49,11 +43,25 @@ function safeEqual(a, b) {
   return crypto.timingSafeEqual(bufA, bufB);
 }
 
-// Best-effort : essaie plusieurs chemins plausibles pour un score
-// d'équipe selon l'event reçu, sans jamais planter si absent.
 function extractScore(teamObj) {
   if (!teamObj) return null;
   return teamObj.score ?? teamObj.stats?.score ?? teamObj.seriesScore ?? null;
+}
+
+// Transforme la liste de joueur·ses d'une équipe (telle qu'envoyée dans
+// team1.players/team2.players à chaque round_end) en lignes de
+// scoreboard K/D/A lisibles.
+function extractPlayers(teamObj) {
+  if (!teamObj?.players) return null;
+  return teamObj.players.map((p) => ({
+    steamid: p.steamid,
+    name: p.name,
+    kills: p.stats?.kills ?? 0,
+    deaths: p.stats?.deaths ?? 0,
+    assists: p.stats?.assists ?? 0,
+    headshotKills: p.stats?.headshot_kills ?? 0,
+    mvp: p.stats?.mvp ?? 0,
+  }));
 }
 
 function applyEvent(state, body) {
@@ -73,6 +81,8 @@ function applyEvent(state, body) {
       team2Score: 0,
       numMaps: body.num_maps ?? null,
       roundsPlayed: 0,
+      team1Players: null,
+      team2Players: null,
     };
   }
 
@@ -80,10 +90,6 @@ function applyEvent(state, body) {
     if (!state.summary) {
       state.summary = { status: "live", team1Name: "Team 1", team2Name: "Team 2", team1Score: 0, team2Score: 0 };
     }
-    // Les noms d'équipe sont envoyés à chaque round_end (pas seulement
-    // à series_start, qui n'arrive pas en mode scrim/pug sans vrai
-    // lancement de série) — on les met à jour à chaque fois qu'ils sont
-    // présents dans le payload.
     if (body.team1?.name) state.summary.team1Name = body.team1.name;
     if (body.team2?.name) state.summary.team2Name = body.team2.name;
 
@@ -91,10 +97,46 @@ function applyEvent(state, body) {
     const s2 = extractScore(body.team2);
     state.summary.team1Score = s1 ?? state.summary.team1Score ?? 0;
     state.summary.team2Score = s2 ?? state.summary.team2Score ?? 0;
-    // `round_number` est envoyé directement dans le payload, plus fiable
-    // que de recompter les events round_end reçus.
     state.summary.roundsPlayed = body.round_number ?? state.history.filter((h) => h.event === "round_end").length;
     state.summary.status = "live";
+
+    // Le scoreboard K/D/A vient des stats cumulées envoyées dans chaque
+    // round_end — on garde la version la plus récente pour chaque équipe.
+    const p1 = extractPlayers(body.team1);
+    const p2 = extractPlayers(body.team2);
+    if (p1) state.summary.team1Players = p1;
+    if (p2) state.summary.team2Players = p2;
+
+    // Un round vient de se terminer : la bombe (si posée) n'est plus
+    // d'actualité.
+    state.bombStatus = null;
+  }
+
+  if (eventName === "round_start") {
+    state.bombStatus = null;
+  }
+
+  if (eventName === "bomb_planted") {
+    state.bombStatus = { site: body.site || null, at: Date.now() };
+  }
+
+  if (eventName === "bomb_defused") {
+    state.bombStatus = { defused: true, site: body.site || null, at: Date.now() };
+  }
+
+  if (eventName === "player_death") {
+    state.killFeed ??= [];
+    state.killFeed.push({
+      killer: body.attacker_name || null,
+      victim: body.victim_name || "?",
+      weapon: body.weapon || null,
+      headshot: !!body.headshot,
+      suicide: !!body.is_suicide,
+      at: Date.now(),
+    });
+    if (state.killFeed.length > MAX_KILLFEED) {
+      state.killFeed = state.killFeed.slice(-MAX_KILLFEED);
+    }
   }
 
   if (eventName === "map_result" || eventName === "series_end") {
@@ -108,7 +150,7 @@ export const handler = async (event) => {
   const headers = { "Content-Type": "application/json" };
 
   if (event.httpMethod === "GET") {
-    const state = (await store().get(KEY, { type: "json" })) || { history: [], summary: null };
+    const state = (await store().get(KEY, { type: "json" })) || EMPTY_STATE;
     return { statusCode: 200, headers, body: JSON.stringify(state) };
   }
 
@@ -120,22 +162,21 @@ export const handler = async (event) => {
       return { statusCode: 400, headers, body: JSON.stringify({ error: "json invalide" }) };
     }
 
-    // Opération de reset (admin), distincte des events MatchZy.
     if (body.op === "reset") {
       if (!safeEqual(body.passcode, process.env.VETO_ADMIN_PASSCODE)) {
         return { statusCode: 403, headers, body: JSON.stringify({ error: "mot de passe incorrect" }) };
       }
-      await store().setJSON(KEY, { history: [], summary: null });
+      await store().setJSON(KEY, EMPTY_STATE);
       return { statusCode: 200, headers, body: JSON.stringify({ ok: true }) };
     }
 
     // Opération de mise à jour manuelle (admin) — un scoreboard tenu à
-    // la main, sans dépendre du webhook MatchZy.
+    // la main, en roue de secours si le webhook MatchZy ne marche pas.
     if (body.op === "manual_set") {
       if (!safeEqual(body.passcode, process.env.VETO_ADMIN_PASSCODE)) {
         return { statusCode: 403, headers, body: JSON.stringify({ error: "mot de passe incorrect" }) };
       }
-      const state = (await store().get(KEY, { type: "json" })) || { history: [], summary: null };
+      const state = (await store().get(KEY, { type: "json" })) || EMPTY_STATE;
       state.summary = {
         status: body.status === "done" ? "done" : "live",
         team1Name: body.team1Name || "Team 1",
@@ -161,7 +202,7 @@ export const handler = async (event) => {
       }
     }
 
-    const state = (await store().get(KEY, { type: "json" })) || { history: [], summary: null };
+    const state = (await store().get(KEY, { type: "json" })) || EMPTY_STATE;
     applyEvent(state, body);
     await store().setJSON(KEY, state);
 

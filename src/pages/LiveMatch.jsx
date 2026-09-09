@@ -2,13 +2,57 @@ import { useCallback, useEffect, useState } from "react";
 
 const POLL_MS = 3000;
 
-const EVENT_LABELS = {
-  series_start: "début de série",
-  round_end: "fin de round",
-  map_result: "fin de map",
-  series_end: "fin de série",
-  going_live: "match en direct",
+const WEAPON_LABELS = {
+  planted_c4: "la bombe",
+  hegrenade: "grenade",
+  knife: "couteau",
 };
+
+function weaponLabel(weapon) {
+  if (!weapon) return "";
+  return WEAPON_LABELS[weapon] || weapon.replace(/^weapon_/, "");
+}
+
+function ScoreboardTable({ teamName, players }) {
+  if (!players || players.length === 0) {
+    return (
+      <div>
+        <p className="text-xs font-bold">{teamName}</p>
+        <p className="mt-1 text-xs text-muted">aucun·e joueur·se</p>
+      </div>
+    );
+  }
+
+  const sorted = [...players].sort((a, b) => b.kills - a.kills);
+
+  return (
+    <div>
+      <p className="text-xs font-bold">{teamName}</p>
+      <table className="mt-2 w-full text-xs">
+        <thead>
+          <tr className="border-b border-border text-muted">
+            <th className="py-1 text-left">joueur·se</th>
+            <th className="py-1 text-right">K</th>
+            <th className="py-1 text-right">D</th>
+            <th className="py-1 text-right">A</th>
+            <th className="py-1 text-right">HS</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map((p) => (
+            <tr key={p.steamid} className="border-b border-border last:border-b-0">
+              <td className="py-1">{p.name}</td>
+              <td className="py-1 text-right">{p.kills}</td>
+              <td className="py-1 text-right">{p.deaths}</td>
+              <td className="py-1 text-right">{p.assists}</td>
+              <td className="py-1 text-right">{p.headshotKills}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
 
 export default function LiveMatch() {
   const [state, setState] = useState(null);
@@ -53,47 +97,71 @@ export default function LiveMatch() {
   }
 
   const summary = state?.summary;
-  const history = state?.history || [];
+  const killFeed = state?.killFeed || [];
+  const bombStatus = state?.bombStatus;
 
   return (
     <div>
-      <h1 className="text-sm font-bold">LIVE MATCH</h1>
+      <h1 className="text-sm font-bold">Live Match</h1>
 
       {error && <p className="mt-2 text-xs">{error}</p>}
 
       {!summary ? (
         <p className="mt-4 text-sm text-muted">aucun match en cours.</p>
       ) : (
-        <div className="mt-6 border border-border p-4">
-          <p className="text-xs text-muted">
-            {summary.status === "done" ? "match terminé" : "en direct"}
-            {summary.roundsPlayed != null && ` — round ${summary.roundsPlayed}`}
-          </p>
-          <div className="mt-2 flex items-baseline gap-4 text-lg font-bold">
-            <span>{summary.team1Name}</span>
-            <span>
-              {summary.team1Score} — {summary.team2Score}
-            </span>
-            <span>{summary.team2Name}</span>
-          </div>
-        </div>
-      )}
+        <>
+          <div className="mt-6 border border-border p-4">
+            <p className="text-xs text-muted">
+              {summary.status === "done" ? "match terminé" : "en direct"}
+              {summary.roundsPlayed != null && ` — round ${summary.roundsPlayed}`}
+              {summary.mapName && ` — ${summary.mapName}`}
+            </p>
+            <div className="mt-2 flex items-baseline gap-4 text-lg font-bold">
+              <span>{summary.team1Name}</span>
+              <span>
+                {summary.team1Score} — {summary.team2Score}
+              </span>
+              <span>{summary.team2Name}</span>
+            </div>
 
-      {history.length > 0 && (
-        <div className="mt-8">
-          <p className="text-xs text-muted">flux d'événements</p>
-          <ul className="mt-2 space-y-1 text-sm">
-            {[...history]
-              .reverse()
-              .slice(0, 40)
-              .map((h, i) => (
-                <li key={i} className="text-muted">
-                  <span className="text-text">{EVENT_LABELS[h.event] || h.event}</span>{" "}
-                  — {new Date(h.at).toLocaleTimeString("fr-CH")}
-                </li>
-              ))}
-          </ul>
-        </div>
+            {bombStatus && (
+              <p className="mt-2 text-xs">
+                {bombStatus.defused
+                  ? `bombe désamorcée${bombStatus.site ? ` (site ${bombStatus.site})` : ""}`
+                  : `bombe posée${bombStatus.site ? ` — site ${bombStatus.site}` : ""}`}
+              </p>
+            )}
+          </div>
+
+          {(summary.team1Players || summary.team2Players) && (
+            <div className="mt-6 grid gap-6 sm:grid-cols-2">
+              <ScoreboardTable teamName={summary.team1Name} players={summary.team1Players} />
+              <ScoreboardTable teamName={summary.team2Name} players={summary.team2Players} />
+            </div>
+          )}
+
+          {killFeed.length > 0 && (
+            <div className="mt-8">
+              <p className="text-xs text-muted">kill feed</p>
+              <ul className="mt-2 space-y-1 text-sm">
+                {[...killFeed].reverse().map((k, i) => (
+                  <li key={i}>
+                    {k.suicide ? (
+                      <span>
+                        {k.victim} s'est éliminé·e{k.weapon ? ` (${weaponLabel(k.weapon)})` : ""}
+                      </span>
+                    ) : (
+                      <span>
+                        {k.killer || "?"} ➜ {k.victim}
+                        {k.weapon && ` (${weaponLabel(k.weapon)}${k.headshot ? " · HS" : ""})`}
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </>
       )}
 
       <div className="mt-10 border-t border-border pt-6">
