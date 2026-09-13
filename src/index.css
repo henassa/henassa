@@ -1,18 +1,15 @@
 @import "tailwindcss";
 
 @theme {
-  /* Palette monochrome noir/gris/blanc, inspirée d'un visuel dégradé
-     gris/fumée — plus de rouge. */
-  --color-bg: #ffffff;
-  --color-panel: #f4f4f4;
-  --color-text: #1a1a1a;
-  --color-muted: #666666;
-  --color-border: #999999;
-  --color-accent: #1a1a1a;
+  /* Palette "sig deep-fried" 2000s : fond nuit bleu/violet, glows néon
+     cyan + or, texte chrome. */
+  --color-bg: #14142a;
+  --color-panel: #1c1c34;
+  --color-text: #e8e8ff;
+  --color-muted: #9494c0;
+  --color-border: #3a3a6a;
+  --color-accent: #00e5ff;
 
-  /* Police "à fond" rétro : Verdana/Arial, la police par défaut de tout
-     vieux site web, plus de monospace. Le nom de variable reste
-     --font-mono pour ne pas avoir à toucher les pages existantes. */
   --font-mono: Verdana, Arial, "Helvetica Neue", sans-serif;
 }
 
@@ -26,99 +23,137 @@ body {
   padding: 0;
 }
 
-/* Fond dégradé gris → blanc avec un voile de "fumée" façon volutes
-   grises translucides, inspiré du visuel fourni (juste le style, pas
-   l'image). 100% monochrome, fixe pour ne pas défiler bizarrement. */
+/* Fond nuit avec des blooms lumineux façon lens-flare (bleu néon,
+   or/orange). Le filtre global pousse saturation/contraste pour un
+   rendu "sursaturé compressé" façon vieille image deep-fried. */
 body {
-  background-color: #e2e2e2;
-  background-image: linear-gradient(to bottom, #d6d6d6 0%, #f5f5f5 55%, #ffffff 100%),
-    radial-gradient(ellipse 60% 40% at 20% 15%, rgba(255, 255, 255, 0.5), transparent 70%),
-    radial-gradient(ellipse 50% 35% at 80% 25%, rgba(0, 0, 0, 0.06), transparent 70%),
-    radial-gradient(ellipse 55% 40% at 15% 75%, rgba(0, 0, 0, 0.05), transparent 70%),
-    radial-gradient(ellipse 45% 30% at 85% 80%, rgba(255, 255, 255, 0.4), transparent 70%);
-  background-blend-mode: normal, screen, multiply, multiply, screen;
+  background-color: #0a0a1a;
+  background-image: radial-gradient(ellipse 75% 45% at 50% -5%, rgba(90, 140, 255, 0.4), transparent 70%),
+    radial-gradient(ellipse 55% 40% at 12% 90%, rgba(255, 175, 60, 0.22), transparent 70%),
+    radial-gradient(ellipse 50% 35% at 92% 85%, rgba(0, 220, 255, 0.22), transparent 70%),
+    linear-gradient(to bottom, #0a0a26 0%, #12122c 50%, #1a1a30 100%);
   background-attachment: fixed;
   color: var(--color-text);
   font-family: var(--font-mono);
   font-size: 13px;
   line-height: 1.5;
+  position: relative;
+  filter: saturate(1.7) contrast(1.18) brightness(1.03);
+}
+
+/* Grain façon vieille image JPEG super compressée — bien visible,
+   grain grossier + un léger motif de bandes façon artefacts de
+   compression par-dessus. En `absolute` (pas `fixed`) pour ne pas
+   entrer en conflit avec le filtre saturate/contrast posé sur `body`
+   (qui crée un contexte de positionnement pour ses descendants fixed). */
+body::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  min-height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.16;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+/* Deuxième couche : fines bandes diagonales très pâles, façon
+   artefacts de compression/banding sur les dégradés. */
+body::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  min-height: 100%;
+  pointer-events: none;
+  z-index: 9998;
+  opacity: 0.06;
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.4) 0px,
+    rgba(255, 255, 255, 0.4) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+  mix-blend-mode: overlay;
 }
 
 a {
-  color: var(--color-text);
+  color: var(--color-accent);
   text-decoration: underline;
+  text-shadow: 0 0 5px rgba(0, 229, 255, 0.5);
 }
 
 a:hover {
-  color: #000000;
+  color: #7cf5ff;
 }
 
-/* Panneau "boîte d'appli" — fond blanc, bordure grise, ombre portée,
-   coins très légèrement arrondis. Utilisé pour envelopper le contenu
-   principal, façon vieille appli web/desktop. */
+/* Panneau "verre néon" — fond sombre semi-opaque, bordure et halo
+   lumineux cyan, ombre portée marquée. */
 .panel {
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  background: rgba(22, 22, 40, 0.92);
+  border: 1px solid rgba(0, 229, 255, 0.35);
+  border-radius: 6px;
+  box-shadow: 0 0 24px rgba(0, 229, 255, 0.12), 0 6px 24px rgba(0, 0, 0, 0.6);
 }
 
-/* Nav — onglets façon vieux web, boutons en dégradé avec bordure et
-   ombre, actif = dégradé noir. */
+/* Nav — onglets chrome façon vieux siggy : dégradé métal gris/blanc au
+   repos, glow cyan à l'état actif. */
 .nav-link {
   display: inline-block;
   padding: 4px 12px;
-  background: linear-gradient(to bottom, #ffffff, #dcdcdc);
-  border: 1px solid #999;
+  background: linear-gradient(to bottom, #f0f0f0 0%, #b8b8b8 45%, #d8d8d8 55%, #888888 100%);
+  border: 1px solid #555;
   border-radius: 3px;
   text-decoration: none;
-  color: #222;
+  color: #111;
   font-weight: bold;
   font-size: 12px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
 .nav-link:hover {
-  background: linear-gradient(to bottom, #ffffff, #eeeeee);
-  color: #222;
+  background: linear-gradient(to bottom, #ffffff 0%, #cacaca 45%, #e8e8e8 55%, #999999 100%);
 }
 
 .nav-link-active {
   display: inline-block;
   padding: 4px 12px;
-  background: linear-gradient(to bottom, #444444, #0a0a0a);
-  border: 1px solid #000;
+  background: linear-gradient(to bottom, #00e5ff, #007fa3);
+  border: 1px solid #00e5ff;
   border-radius: 3px;
   text-decoration: none;
   color: #fff;
   font-weight: bold;
   font-size: 12px;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+  text-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.7), inset 0 1px 2px rgba(255, 255, 255, 0.5);
 }
 
-/* Le lien "boîte inversée" d'avant devient un lien noir classique gras
-   souligné — même contrat de classe, nouvel habillage, pour ne pas
-   avoir à toucher chaque page qui l'utilise (titres de musiques,
-   sélections, items de log...). */
+/* Le lien "boîte inversée" d'avant devient un lien cyan lumineux gras
+   souligné, avec une légère aberration chromatique (liseré rouge/bleu
+   décalé) façon vieille image sur-compressée. */
 .link-box {
-  color: var(--color-text);
+  color: var(--color-accent);
   text-decoration: underline;
   font-weight: bold;
+  text-shadow: 0 0 6px rgba(0, 229, 255, 0.7), -1px 0 rgba(255, 0, 60, 0.5), 1px 0 rgba(0, 200, 255, 0.5);
 }
 
 .link-box:hover {
-  color: #000000;
+  color: #7cf5ff;
 }
 
 .link-box-active {
-  color: var(--color-text);
+  color: var(--color-accent);
   font-weight: bold;
   text-decoration: none;
+  text-shadow: 0 0 6px rgba(0, 229, 255, 0.7), -1px 0 rgba(255, 0, 60, 0.5), 1px 0 rgba(0, 200, 255, 0.5);
 }
 
-/* Badge façon "SPONSORED"/"OFFICIAL" — petit rectangle en dégradé
-   noir, texte blanc en majuscules avec ombre portée. */
+/* Badge façon ruban "18+"/logo orange des vieilles sigs — dégradé
+   or/orange lumineux. */
 .badge {
   display: inline-block;
   padding: 1px 7px;
@@ -126,57 +161,60 @@ a:hover {
   font-weight: bold;
   letter-spacing: 0.03em;
   text-transform: uppercase;
-  color: #fff;
-  background: linear-gradient(to bottom, #444444, #0a0a0a);
-  border: 1px solid #000;
+  color: #3a1a00;
+  background: linear-gradient(to bottom, #ffd54f, #ff8f00);
+  border: 1px solid #b45300;
   border-radius: 2px;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 8px rgba(255, 160, 0, 0.6);
 }
 
-/* Tables — en-tête en dégradé gris, lignes zébrées, bordures fines. */
+/* Tables — thème sombre, en-tête en dégradé, lignes zébrées discrètes. */
 table {
   border-collapse: collapse;
 }
 
 th {
-  background: linear-gradient(to bottom, #f2f2f2, #d5d5d5);
-  border: 1px solid #999;
+  background: linear-gradient(to bottom, #2a2a48, #14142a);
+  border: 1px solid #3a3a5e;
   padding: 5px 9px;
   text-align: left;
   font-weight: bold;
   font-size: 12px;
+  color: #cceeff;
 }
 
 td {
-  border: 1px solid #ccc;
+  border: 1px solid #2a2a45;
   padding: 5px 9px;
 }
 
 tbody tr:nth-child(even) td {
-  background: #f6f6f6;
+  background: rgba(255, 255, 255, 0.03);
 }
 
-/* Boutons et champs — bordures 3D façon vieux formulaires web. */
+/* Boutons et champs — chrome, glow cyan au survol/focus. */
 button,
 input[type="submit"] {
   font-family: inherit;
   font-size: 12px;
   font-weight: bold;
   padding: 5px 12px;
-  background: linear-gradient(to bottom, #ffffff, #dcdcdc);
-  border: 1px solid #999;
+  background: linear-gradient(to bottom, #f0f0f0 0%, #b8b8b8 45%, #d8d8d8 55%, #888888 100%);
+  border: 1px solid #555;
   border-radius: 3px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
   cursor: pointer;
-  color: #222;
+  color: #111;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 button:hover {
-  background: linear-gradient(to bottom, #ffffff, #eeeeee);
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
 button:active {
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 input[type="text"],
@@ -185,16 +223,14 @@ select,
 textarea {
   font-family: inherit;
   font-size: 12px;
-  border: 1px solid #999;
+  border: 1px solid #3a3a5e;
   border-radius: 2px;
-  box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.4);
   padding: 4px 6px;
-  background: #fff;
-  color: #222;
+  background: #0e0e20;
+  color: var(--color-text);
 }
 
-/* Révélation façon "défilement de cartes" au démarrage d'un veto —
-   inchangée, indépendante de l'habillage général. */
 .map-card-hidden {
   opacity: 0;
   transform: perspective(500px) rotateY(90deg) scale(0.85);
@@ -222,5 +258,5 @@ textarea {
 
 ::selection {
   background: var(--color-accent);
-  color: #fff;
+  color: #061018;
 }
