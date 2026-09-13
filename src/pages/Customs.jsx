@@ -1,10 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { cs2stats } from "../data/cs2stats";
-import { flagEmoji } from "../lib/flag";
 
 const columns = [
   { key: "pseudo", label: "JOUEUR·SE" },
-  { key: "country", label: "NATIONALITÉ" },
   { key: "elo", label: "ELO FACEIT" },
   { key: "rating", label: "RATING 2.0" },
   { key: "kdDiff", label: "K/D DIFF" },
@@ -14,29 +12,30 @@ const columns = [
   { key: "winrate", label: "WINRATE" },
 ];
 
-// Regroupe les lignes brutes (une par map jouée) en une ligne par
-// joueur·se, avec les totaux/moyennes.
+// Regroupe les lignes brutes (une par session) en une ligne par
+// joueur·se, avec les totaux/moyennes à travers toutes les sessions.
 function aggregate(rows) {
   const byPseudo = {};
   for (const r of rows) {
     byPseudo[r.pseudo] ??= {
       pseudo: r.pseudo,
       steamId: r.steamId || null,
-      faceitNickname: r.faceitNickname || null,
       kills: 0,
       deaths: 0,
       adrSum: 0,
       ratingSum: 0,
       wins: 0,
       mapsPlayed: 0,
+      sessions: 0,
     };
     const p = byPseudo[r.pseudo];
     p.kills += r.kills;
     p.deaths += r.deaths;
-    p.adrSum += r.adr;
-    p.ratingSum += r.rating;
-    p.wins += r.win ? 1 : 0;
-    p.mapsPlayed += 1;
+    p.adrSum += r.adr * r.maps; // moyenne pondérée par le nombre de maps de la session
+    p.ratingSum += r.rating * r.maps;
+    p.wins += r.wins;
+    p.mapsPlayed += r.maps;
+    p.sessions += 1;
   }
 
   return Object.values(byPseudo).map((p) => ({
@@ -52,7 +51,7 @@ function aggregate(rows) {
 export default function Customs() {
   const [sortKey, setSortKey] = useState("rating");
   const [sortDir, setSortDir] = useState("desc");
-  const [enrichment, setEnrichment] = useState({ steam: {}, faceit: {} });
+  const [faceitData, setFaceitData] = useState({});
 
   const players = useMemo(() => aggregate(cs2stats), []);
 
@@ -60,14 +59,9 @@ export default function Customs() {
     const steamIds = [...new Set(players.map((p) => p.steamId).filter(Boolean))];
     if (steamIds.length === 0) return;
 
-    fetch(`/.netlify/functions/steam-profile?steamids=${steamIds.join(",")}`)
-      .then((r) => r.json())
-      .then((steam) => setEnrichment((e) => ({ ...e, steam })))
-      .catch(() => {});
-
     fetch(`/.netlify/functions/faceit-elo?steamids=${steamIds.join(",")}`)
       .then((r) => r.json())
-      .then((faceit) => setEnrichment((e) => ({ ...e, faceit })))
+      .then(setFaceitData)
       .catch(() => {});
   }, [players]);
 
@@ -81,11 +75,9 @@ export default function Customs() {
   }
 
   const rows = players.map((p) => {
-    const steam = p.steamId ? enrichment.steam[p.steamId] : null;
-    const faceit = p.steamId ? enrichment.faceit[p.steamId] : null;
+    const faceit = p.steamId ? faceitData[p.steamId] : null;
     return {
       ...p,
-      country: steam?.countryCode || null,
       elo: faceit?.elo ?? null,
       faceitUrl: faceit?.faceitUrl || null,
     };
@@ -107,7 +99,7 @@ export default function Customs() {
       <p className="mt-1 text-xs text-muted">clique une colonne pour trier</p>
 
       <div className="mt-6 overflow-x-auto border border-border">
-        <table className="w-full min-w-[720px] border-collapse text-sm">
+        <table className="w-full min-w-[640px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-border">
               {columns.map((col) => (
@@ -143,9 +135,6 @@ export default function Customs() {
                   )}
                 </td>
                 <td className="whitespace-nowrap px-3 py-2">
-                  {flagEmoji(row.country) || <span className="text-muted">—</span>}
-                </td>
-                <td className="whitespace-nowrap px-3 py-2">
                   {row.elo != null ? (
                     row.faceitUrl ? (
                       <a href={row.faceitUrl} target="_blank" rel="noreferrer" className="underline">
@@ -173,8 +162,8 @@ export default function Customs() {
       </div>
 
       <p className="mt-3 text-xs text-muted">
-        nationalité et elo faceit nécessitent les clés STEAM_API_KEY et FACEIT_API_KEY sur
-        Netlify — sans ça, ces colonnes restent vides.
+        l'elo faceit nécessite la clé FACEIT_API_KEY sur Netlify — sans ça, cette colonne reste
+        vide.
       </p>
     </div>
   );
