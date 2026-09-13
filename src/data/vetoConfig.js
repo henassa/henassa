@@ -1,14 +1,8 @@
 // ─────────────────────────────────────────────────────────────
-// LOG — la liste affichée sur l'accueil, façon journal de bord.
-// Le plus récent en premier. `date` au format "JJ/MM/AAAA".
-// `link` est optionnel : si présent, le titre devient cliquable.
+// VETO — CONFIG PAR DÉFAUT
+// Le pool par défaut du formulaire admin vient directement des maps
+// marquées type: "official" dans data/maps.js — pas besoin de le
+// dupliquer ici. Ce fichier ne garde que le format par défaut.
 // ─────────────────────────────────────────────────────────────
 
-export const updates = [
-  {
-    date: "08/09/2026",
-    title: "BIENVENUE",
-    description: "le site est en ligne. plus de contenu très bientôt.",
-    link: null,
-  },
-];
+export const defaultBoFormat = "bo1"; // "bo1" | "bo3" | "bo5"
