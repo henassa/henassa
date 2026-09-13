@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { apps, findApp } from "../data/apps";
 import WindowFrame from "./WindowFrame";
-import { siteName } from "../data/config";
 
 function TrayClock() {
   const [now, setNow] = useState(new Date());
@@ -16,21 +15,35 @@ function TrayClock() {
   );
 }
 
+// Toutes les fenêtres sont ouvertes dès le chargement, en cascade —
+// comme sur le site de référence (les icônes du bureau servent à autre
+// chose, pas à ouvrir ces fenêtres-là).
+function initialWindows() {
+  return apps.map((app, i) => ({
+    appId: app.id,
+    x: 40 + i * 36,
+    y: 30 + i * 36,
+    width: app.width,
+    height: app.height,
+    z: 10 + i,
+    minimized: false,
+    maximized: false,
+    prevRect: null,
+  }));
+}
+
 export default function Desktop() {
-  const [windows, setWindows] = useState([]); // { appId, x, y, width, height, z, minimized }
-  const [nextZ, setNextZ] = useState(10);
-  const [startOpen, setStartOpen] = useState(false);
+  const [windows, setWindows] = useState(initialWindows);
+  const [nextZ, setNextZ] = useState(10 + apps.length);
 
   function openApp(appId) {
     setWindows((prev) => {
       const existing = prev.find((w) => w.appId === appId);
       if (existing) {
-        return prev.map((w) =>
-          w.appId === appId ? { ...w, minimized: false, z: nextZ } : w
-        );
+        return prev.map((w) => (w.appId === appId ? { ...w, minimized: false, z: nextZ } : w));
       }
       const app = findApp(appId);
-      const offset = prev.length * 24;
+      const offset = prev.length * 36;
       return [
         ...prev,
         {
@@ -41,11 +54,12 @@ export default function Desktop() {
           height: app.height,
           z: nextZ,
           minimized: false,
+          maximized: false,
+          prevRect: null,
         },
       ];
     });
     setNextZ((z) => z + 1);
-    setStartOpen(false);
   }
 
   function closeWindow(appId) {
@@ -60,8 +74,26 @@ export default function Desktop() {
   }
 
   function toggleMinimize(appId) {
+    setWindows((prev) => prev.map((w) => (w.appId === appId ? { ...w, minimized: !w.minimized } : w)));
+  }
+
+  function toggleMaximize(appId) {
     setWindows((prev) =>
-      prev.map((w) => (w.appId === appId ? { ...w, minimized: !w.minimized } : w))
+      prev.map((w) => {
+        if (w.appId !== appId) return w;
+        if (w.maximized) {
+          return { ...w, maximized: false, ...w.prevRect, prevRect: null };
+        }
+        return {
+          ...w,
+          maximized: true,
+          prevRect: { x: w.x, y: w.y, width: w.width, height: w.height },
+          x: 0,
+          y: 0,
+          width: "100%",
+          height: "100%",
+        };
+      })
     );
   }
 
@@ -116,35 +148,19 @@ export default function Desktop() {
               size={{ width: w.width, height: w.height }}
               zIndex={w.z}
               minimized={w.minimized}
+              maximized={w.maximized}
               onFocus={() => focusWindow(w.appId)}
               onClose={() => closeWindow(w.appId)}
               onMinimize={() => toggleMinimize(w.appId)}
+              onMaximize={() => toggleMaximize(w.appId)}
               onMove={(pos) => moveWindow(w.appId, pos)}
               onResize={(size) => resizeWindow(w.appId, size)}
             />
           );
         })}
-
-        {startOpen && (
-          <div className="start-menu" onMouseLeave={() => setStartOpen(false)}>
-            {apps.map((app) => (
-              <button key={app.id} type="button" onClick={() => openApp(app.id)}>
-                <img src={app.icon} alt="" />
-                {app.title}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
 
       <div id="taskbar">
-        <button
-          type="button"
-          className="taskbar-start"
-          onClick={() => setStartOpen((v) => !v)}
-          aria-label={siteName}
-        />
-        <div className="taskbar-divider" />
         <div id="taskbar-buttons">
           {windows.map((w) => {
             const app = findApp(w.appId);

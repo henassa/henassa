@@ -1,16 +1,25 @@
 // ─────────────────────────────────────────────────────────────
-// APPS DU BUREAU — chaque entrée devient une icône sur le bureau, une
-// entrée dans le menu Start, et une fenêtre qu'on peut ouvrir/déplacer/
-// redimensionner/fermer. `component` est le composant React affiché
-// dans le corps de la fenêtre (import direct depuis src/pages/).
+// APPS DU BUREAU — chaque entrée devient une icône sur le bureau et une
+// fenêtre qu'on peut ouvrir/déplacer/redimensionner/fermer. `component`
+// est le composant React affiché dans le corps de la fenêtre (import
+// direct depuis src/pages/).
 // ─────────────────────────────────────────────────────────────
 
 import Home from "../pages/Home";
 import Selections from "../pages/Selections";
 import Customs from "../pages/Customs";
 import Setup from "../pages/Setup";
+import AboutMe from "../pages/AboutMe";
 
 export const apps = [
+  {
+    id: "about",
+    title: "About Me",
+    icon: "https://win98icons.alexmeub.com/icons/png/address_book_user-0.png",
+    component: AboutMe,
+    width: 300,
+    height: 260,
+  },
   {
     id: "home",
     title: "Accueil",

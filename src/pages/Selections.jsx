@@ -48,9 +48,7 @@ export default function Selections() {
 
   return (
     <div>
-      <h1 className="text-sm font-bold">Sélections</h1>
-
-      <section className="mt-8">
+      <section className="mt-2">
         <p className="text-xs text-muted">sons — {monthLabel}</p>
         <ol className="mt-3 space-y-1.5">
           {sortedSongs.map((song) => (

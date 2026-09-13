@@ -95,9 +95,6 @@ export default function Customs() {
 
   return (
     <div>
-      <h1 className="text-sm font-bold">CUSTOMS CS2</h1>
-      <p className="mt-1 text-xs text-muted">clique une colonne pour trier</p>
-
       <div className="mt-6 overflow-x-auto border border-border">
         <table className="w-full min-w-[640px] border-collapse text-sm">
           <thead>

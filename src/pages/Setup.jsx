@@ -224,8 +224,6 @@ export default function Setup() {
 
   return (
     <div>
-      <h1 className="text-sm font-bold">Settings</h1>
-
       {gameSettings.map((g) => (
         <GameSettingsBlock key={g.game} g={g} />
       ))}

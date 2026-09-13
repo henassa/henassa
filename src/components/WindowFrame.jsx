@@ -6,9 +6,11 @@ export default function WindowFrame({
   size,
   zIndex,
   minimized,
+  maximized,
   onFocus,
   onClose,
   onMinimize,
+  onMaximize,
   onMove,
   onResize,
 }) {
@@ -21,6 +23,8 @@ export default function WindowFrame({
       minHeight={200}
       bounds="parent"
       dragHandleClassName="win-titlebar"
+      disableDragging={maximized}
+      enableResizing={!maximized}
       onDragStart={onFocus}
       onDragStop={(e, d) => onMove({ x: d.x, y: d.y })}
       onResizeStart={onFocus}
@@ -29,19 +33,20 @@ export default function WindowFrame({
         onMove(pos);
       }}
       onMouseDown={onFocus}
-      className="win glass flex flex-col overflow-hidden"
+      className="win window glass"
     >
       <div className="title-bar win-titlebar">
-        <div className="title-bar-text flex items-center gap-1.5">
-          <img src={app.icon} alt="" className="h-3.5 w-3.5" />
+        <div className="title-bar-text">
+          <img src={app.icon} alt="" width={14} height={14} style={{ marginRight: 4 }} />
           {app.title}
         </div>
         <div className="title-bar-controls">
           <button aria-label="Minimize" onClick={onMinimize}></button>
+          <button aria-label={maximized ? "Restore" : "Maximize"} onClick={onMaximize}></button>
           <button aria-label="Close" onClick={onClose}></button>
         </div>
       </div>
-      <div className="window-body flex-1 overflow-y-auto p-3 text-sm">
+      <div className="window-body">
         <app.component />
       </div>
     </Rnd>
