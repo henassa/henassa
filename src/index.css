@@ -1,17 +1,19 @@
 @import "tailwindcss";
 
 @theme {
-  /* Palette : deux couleurs, point. Le "style" vient de l'inversion
-     noir/blanc (façon sélection de texte terminal), pas d'un accent. */
+  /* Palette monochrome noir/gris/blanc, inspirée d'un visuel dégradé
+     gris/fumée — plus de rouge. */
   --color-bg: #ffffff;
-  --color-text: #000000;
-  --color-muted: #6b6b6b;
-  --color-border: #000000;
+  --color-panel: #f4f4f4;
+  --color-text: #1a1a1a;
+  --color-muted: #666666;
+  --color-border: #999999;
+  --color-accent: #1a1a1a;
 
-  /* Police console la plus basique/défaut possible — pas de stack
-     exotique, juste Consolas / Lucida Console comme sur n'importe quel
-     vieux terminal Windows. */
-  --font-mono: Consolas, "Lucida Console", Monaco, monospace;
+  /* Police "à fond" rétro : Verdana/Arial, la police par défaut de tout
+     vieux site web, plus de monospace. Le nom de variable reste
+     --font-mono pour ne pas avoir à toucher les pages existantes. */
+  --font-mono: Verdana, Arial, "Helvetica Neue", sans-serif;
 }
 
 * {
@@ -24,84 +26,175 @@ body {
   padding: 0;
 }
 
+/* Fond dégradé gris → blanc avec un voile de "fumée" façon volutes
+   grises translucides, inspiré du visuel fourni (juste le style, pas
+   l'image). 100% monochrome, fixe pour ne pas défiler bizarrement. */
 body {
-  background: var(--color-bg);
+  background-color: #e2e2e2;
+  background-image: linear-gradient(to bottom, #d6d6d6 0%, #f5f5f5 55%, #ffffff 100%),
+    radial-gradient(ellipse 60% 40% at 20% 15%, rgba(255, 255, 255, 0.5), transparent 70%),
+    radial-gradient(ellipse 50% 35% at 80% 25%, rgba(0, 0, 0, 0.06), transparent 70%),
+    radial-gradient(ellipse 55% 40% at 15% 75%, rgba(0, 0, 0, 0.05), transparent 70%),
+    radial-gradient(ellipse 45% 30% at 85% 80%, rgba(255, 255, 255, 0.4), transparent 70%);
+  background-blend-mode: normal, screen, multiply, multiply, screen;
+  background-attachment: fixed;
   color: var(--color-text);
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-  text-transform: lowercase;
 }
 
 a {
-  color: inherit;
-  text-decoration: none;
-}
-
-/* Nav : texte brut, pas de boîte. Juste un soulignement pour l'état
-   actif/survolé — aucune bordure, aucun fond. */
-.nav-link {
-  text-decoration: none;
-}
-
-.nav-link:hover {
+  color: var(--color-text);
   text-decoration: underline;
 }
 
+a:hover {
+  color: #000000;
+}
+
+/* Panneau "boîte d'appli" — fond blanc, bordure grise, ombre portée,
+   coins très légèrement arrondis. Utilisé pour envelopper le contenu
+   principal, façon vieille appli web/desktop. */
+.panel {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Nav — onglets façon vieux web, boutons en dégradé avec bordure et
+   ombre, actif = dégradé noir. */
+.nav-link {
+  display: inline-block;
+  padding: 4px 12px;
+  background: linear-gradient(to bottom, #ffffff, #dcdcdc);
+  border: 1px solid #999;
+  border-radius: 3px;
+  text-decoration: none;
+  color: #222;
+  font-weight: bold;
+  font-size: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.nav-link:hover {
+  background: linear-gradient(to bottom, #ffffff, #eeeeee);
+  color: #222;
+}
+
 .nav-link-active {
+  display: inline-block;
+  padding: 4px 12px;
+  background: linear-gradient(to bottom, #444444, #0a0a0a);
+  border: 1px solid #000;
+  border-radius: 3px;
+  text-decoration: none;
+  color: #fff;
+  font-weight: bold;
+  font-size: 12px;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* Le lien "boîte inversée" d'avant devient un lien noir classique gras
+   souligné — même contrat de classe, nouvel habillage, pour ne pas
+   avoir à toucher chaque page qui l'utilise (titres de musiques,
+   sélections, items de log...). */
+.link-box {
+  color: var(--color-text);
   text-decoration: underline;
   font-weight: bold;
 }
 
-/* Le lien "boîte inversée" — réservé au contenu (titres de musiques,
-   tierlists, items de log), pas à la nav. Fond noir, texte blanc, comme
-   du texte sélectionné dans un terminal. Statique, pas d'animation. */
-.link-box {
-  display: inline-block;
-  background: var(--color-text);
-  color: var(--color-bg);
-  padding: 0 4px;
+.link-box:hover {
+  color: #000000;
 }
 
-/* Version pour les éléments déjà "actifs"/sélectionnés (ex. page
-   courante dans la nav) : reste inversée en permanence. */
 .link-box-active {
+  color: var(--color-text);
+  font-weight: bold;
+  text-decoration: none;
+}
+
+/* Badge façon "SPONSORED"/"OFFICIAL" — petit rectangle en dégradé
+   noir, texte blanc en majuscules avec ombre portée. */
+.badge {
   display: inline-block;
-  background: var(--color-text);
-  color: var(--color-bg);
-  padding: 0 4px;
+  padding: 1px 7px;
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #fff;
+  background: linear-gradient(to bottom, #444444, #0a0a0a);
+  border: 1px solid #000;
+  border-radius: 2px;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 
-/* Curseur clignotant façon prompt terminal — utilise-le en fin de
-   titre : <span className="cursor-blink">_</span> */
-.cursor-blink {
-  animation: blink 1s steps(1) infinite;
+/* Tables — en-tête en dégradé gris, lignes zébrées, bordures fines. */
+table {
+  border-collapse: collapse;
 }
 
-@keyframes blink {
-  50% {
-    opacity: 0;
-  }
+th {
+  background: linear-gradient(to bottom, #f2f2f2, #d5d5d5);
+  border: 1px solid #999;
+  padding: 5px 9px;
+  text-align: left;
+  font-weight: bold;
+  font-size: 12px;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .link-box:hover {
-    animation: none;
-  }
-  .cursor-blink {
-    animation: none;
-  }
-  .map-card-hidden {
-    transition: none !important;
-    opacity: 1 !important;
-    transform: none !important;
-  }
+td {
+  border: 1px solid #ccc;
+  padding: 5px 9px;
 }
 
-/* Révélation façon "défilement de cartes" au démarrage d'un veto :
-   chaque map part masquée/retournée puis se révèle avec un léger
-   décalage (transition-delay défini en inline style par carte). */
+tbody tr:nth-child(even) td {
+  background: #f6f6f6;
+}
+
+/* Boutons et champs — bordures 3D façon vieux formulaires web. */
+button,
+input[type="submit"] {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 5px 12px;
+  background: linear-gradient(to bottom, #ffffff, #dcdcdc);
+  border: 1px solid #999;
+  border-radius: 3px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  color: #222;
+}
+
+button:hover {
+  background: linear-gradient(to bottom, #ffffff, #eeeeee);
+}
+
+button:active {
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+input[type="text"],
+input[type="password"],
+select,
+textarea {
+  font-family: inherit;
+  font-size: 12px;
+  border: 1px solid #999;
+  border-radius: 2px;
+  box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.2);
+  padding: 4px 6px;
+  background: #fff;
+  color: #222;
+}
+
+/* Révélation façon "défilement de cartes" au démarrage d'un veto —
+   inchangée, indépendante de l'habillage général. */
 .map-card-hidden {
   opacity: 0;
   transform: perspective(500px) rotateY(90deg) scale(0.85);
@@ -114,12 +207,20 @@ a {
   transition: opacity 0.35s ease, transform 0.35s ease;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .map-card-hidden {
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
 :focus-visible {
-  outline: 2px solid var(--color-text);
-  outline-offset: 2px;
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
 }
 
 ::selection {
-  background: var(--color-text);
-  color: var(--color-bg);
+  background: var(--color-accent);
+  color: #fff;
 }

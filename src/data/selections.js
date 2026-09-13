@@ -1,23 +1,23 @@
 // ─────────────────────────────────────────────────────────────
-// TIERLISTS — chaque entrée est soit une IMAGE (une capture de tierlist
-// que t'as déjà faite ailleurs), soit du TEXTE (des tiers avec une liste
-// d'items, générés directement par le site).
+// SÉLECTIONS — chaque entrée est soit une IMAGE (une capture de
+// sélection que t'as déjà faite ailleurs), soit du TEXTE (des tiers
+// avec une liste d'items, générés directement par le site).
 //
-// `id` sert dans l'URL (/tierlists/{id}) — garde-le court, sans espace.
+// `id` sert dans l'URL (/selections/{id}) — garde-le court, sans espace.
 //
-// Pour une tierlist IMAGE :
-//   type: "image", image: "/tierlists/nom-du-fichier.png"
-//   → mets le fichier dans le dossier public/tierlists/ du projet.
+// Pour une sélection IMAGE :
+//   type: "image", image: "/selections/nom-du-fichier.png"
+//   → mets le fichier dans le dossier public/selections/ du projet.
 //
-// Pour une tierlist TEXTE :
+// Pour une sélection TEXTE :
 //   type: "text", tiers: [ { tier: "S", items: [...] }, ... ]
 //   → l'ordre des tiers dans le tableau = l'ordre d'affichage.
 // ─────────────────────────────────────────────────────────────
 
-export const tierlists = [
+export const selections = [
   {
     id: "exemple-texte",
-    title: "EXEMPLE — TIERLIST TEXTE",
+    title: "EXEMPLE — SÉLECTION TEXTE",
     date: "08/09/2026",
     type: "text",
     description: "",
@@ -29,10 +29,10 @@ export const tierlists = [
   },
   {
     id: "exemple-image",
-    title: "EXEMPLE — TIERLIST IMAGE",
+    title: "EXEMPLE — SÉLECTION IMAGE",
     date: "08/09/2026",
     type: "image",
     description: "",
-    image: "/tierlists/exemple.png",
+    image: "/selections/exemple.png",
   },
 ];

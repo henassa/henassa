@@ -1,15 +1,15 @@
 import { Link, useParams } from "react-router-dom";
-import { tierlists } from "../data/tierlists";
+import { selections } from "../data/selections";
 
-export default function TierlistDetail() {
+export default function SelectionDetail() {
   const { id } = useParams();
-  const tl = tierlists.find((t) => t.id === id);
+  const sel = selections.find((s) => s.id === id);
 
-  if (!tl) {
+  if (!sel) {
     return (
       <div>
-        <p className="text-sm">tierlist introuvable.</p>
-        <Link to="/tierlists" className="link-box mt-4 inline-block">
+        <p className="text-sm">sélection introuvable.</p>
+        <Link to="/selections" className="link-box mt-4 inline-block">
           ← retour
         </Link>
       </div>
@@ -18,19 +18,19 @@ export default function TierlistDetail() {
 
   return (
     <div>
-      <Link to="/tierlists" className="link-box text-xs">
+      <Link to="/selections" className="link-box text-xs">
         ← retour
       </Link>
 
-      <h1 className="mt-4 text-sm font-bold">{tl.title}</h1>
-      <p className="text-xs text-muted">[{tl.date}]</p>
-      {tl.description && <p className="mt-2 text-sm">{tl.description}</p>}
+      <h1 className="mt-4 text-sm font-bold">{sel.title}</h1>
+      <p className="text-xs text-muted">[{sel.date}]</p>
+      {sel.description && <p className="mt-2 text-sm">{sel.description}</p>}
 
-      {tl.type === "image" ? (
-        <img src={tl.image} alt={tl.title} className="mt-6 w-full border border-border" />
+      {sel.type === "image" ? (
+        <img src={sel.image} alt={sel.title} className="mt-6 w-full border border-border" />
       ) : (
         <div className="mt-6 space-y-2">
-          {tl.tiers.map((t) => (
+          {sel.tiers.map((t) => (
             <div key={t.tier} className="flex gap-3 border border-border">
               <div className="flex w-10 shrink-0 items-center justify-center border-r border-border py-2 text-sm font-bold">
                 {t.tier}

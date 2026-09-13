@@ -1,33 +1,36 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Layout from "./components/Layout";
-import Home from "./pages/Home";
-import Selections from "./pages/Selections";
-import TierlistDetail from "./pages/TierlistDetail";
-import Customs from "./pages/Customs";
-import LiveMatch from "./pages/LiveMatch";
-import Setup from "./pages/Setup";
-import Veto from "./pages/Veto";
-import VetoAdmin from "./pages/VetoAdmin";
-import VetoCaptain from "./pages/VetoCaptain";
-import VetoSpectator from "./pages/VetoSpectator";
+import { NavLink } from "react-router-dom";
+import { siteName, navLinks } from "../data/config";
 
-export default function App() {
+export default function Nav() {
   return (
-    <BrowserRouter>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/tierlists" element={<Selections />} />
-          <Route path="/tierlists/:id" element={<TierlistDetail />} />
-          <Route path="/customs" element={<Customs />} />
-          <Route path="/live" element={<LiveMatch />} />
-          <Route path="/setup" element={<Setup />} />
-          <Route path="/veto" element={<Veto />} />
-          <Route path="/veto/admin" element={<VetoAdmin />} />
-          <Route path="/veto/captain/:id/:slot/:token" element={<VetoCaptain />} />
-          <Route path="/veto/:id" element={<VetoSpectator />} />
-        </Routes>
-      </Layout>
-    </BrowserRouter>
+    <header
+      className="px-4 py-3"
+      style={{
+        background: "linear-gradient(to bottom, #3a3a3a, #0a0a0a)",
+        borderBottom: "1px solid #000",
+        boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
+      }}
+    >
+      <NavLink
+        to="/"
+        className="text-lg font-bold"
+        style={{ color: "#fff", textShadow: "0 1px 2px rgba(0,0,0,0.4)", textDecoration: "none" }}
+      >
+        {siteName}
+      </NavLink>
+
+      <nav className="mt-2.5 flex flex-wrap items-center gap-2">
+        {navLinks.map((link) => (
+          <NavLink
+            key={link.to}
+            to={link.to}
+            end={link.to === "/"}
+            className={({ isActive }) => (isActive ? "nav-link-active" : "nav-link")}
+          >
+            {link.label}
+          </NavLink>
+        ))}
+      </nav>
+    </header>
   );
 }
