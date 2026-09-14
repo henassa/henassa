@@ -5,11 +5,11 @@ export default function Calendar() {
     <table className="w-full text-sm">
       <thead>
         <tr>
-          <th>date</th>
-          <th>heure</th>
-          <th>évènement</th>
-          <th>jeu</th>
-          <th>ladder</th>
+          <th>Date</th>
+          <th>Heure</th>
+          <th>Évènement</th>
+          <th>Jeu</th>
+          <th>Ladder</th>
         </tr>
       </thead>
       <tbody>

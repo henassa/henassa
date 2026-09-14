@@ -37,7 +37,7 @@ function GameHub({ gameId, onBack, onOpenPlayer, onOpenMatch }) {
     <div>
       <div className="comp-breadcrumb">
         <button type="button" onClick={onBack} className="link-box text-xs">
-          ← jeux
+          ← Jeux
         </button>
         <img src={game?.icon} alt="" width={16} height={16} />
         <strong>{game?.label}</strong>
@@ -58,7 +58,7 @@ function GameHub({ gameId, onBack, onOpenPlayer, onOpenMatch }) {
           <table>
             <thead>
               <tr>
-                <th>joueur·se</th>
+                <th>Joueur·se</th>
                 <th style={{ width: 60 }}>elo</th>
                 <th style={{ width: 40 }}>V</th>
                 <th style={{ width: 40 }}>D</th>
@@ -93,7 +93,7 @@ function GameHub({ gameId, onBack, onOpenPlayer, onOpenMatch }) {
             <thead>
               <tr>
                 <th style={{ width: 90 }}>date</th>
-                <th>rencontre</th>
+                <th>Rencontre</th>
                 <th style={{ width: 70 }}>score</th>
                 <th style={{ width: 90 }}>map</th>
               </tr>
@@ -151,24 +151,24 @@ function PlayerProfile({ playerId, onBack, onOpenMatch }) {
       <table className="mt-2">
         <tbody>
           <tr>
-            <td className="text-muted">elo</td>
+            <td className="text-muted">ÉLO</td>
             <td>{p.elo}</td>
           </tr>
           <tr>
-            <td className="text-muted">victoires</td>
+            <td className="text-muted">Victoires</td>
             <td>{p.wins}</td>
           </tr>
           <tr>
-            <td className="text-muted">défaites</td>
+            <td className="text-muted">Défaites</td>
             <td>{p.losses}</td>
           </tr>
           <tr>
-            <td className="text-muted">mvp</td>
+            <td className="text-muted">MVP</td>
             <td>{p.mvps}</td>
           </tr>
           {p.steamId && (
             <tr>
-              <td className="text-muted">steam</td>
+              <td className="text-muted">Steam</td>
               <td>
                 <a href={`https://steamcommunity.com/profiles/${p.steamId}`} target="_blank" rel="noreferrer">
                   profil
@@ -179,20 +179,20 @@ function PlayerProfile({ playerId, onBack, onOpenMatch }) {
         </tbody>
       </table>
 
-      <p className="mt-4 text-xs text-muted">derniers matchs</p>
+      <p className="mt-4 text-xs text-muted">Derniers matchs</p>
       <table className="mt-1">
         <thead>
           <tr>
-            <th style={{ width: 90 }}>date</th>
-            <th>rencontre</th>
-            <th style={{ width: 70 }}>score</th>
+            <th style={{ width: 90 }}>Date</th>
+            <th>Rencontre</th>
+            <th style={{ width: 70 }}>Score</th>
           </tr>
         </thead>
         <tbody>
           {recentMatches.length === 0 && (
             <tr>
               <td colSpan={3} className="text-muted">
-                aucun match pour l'instant.
+                Aucun match pour l'instant.
               </td>
             </tr>
           )}
