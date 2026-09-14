@@ -1,19 +1,184 @@
-// ─────────────────────────────────────────────────────────────
-// TOP 100 — la liste du mois en cours. Une ligne = une musique.
-// Clique dessus sur le site → ouvre `youtubeUrl` dans un nouvel onglet.
-// `rank` détermine l'ordre d'affichage (1 = en haut).
-//
-// `monthLabel` s'affiche en haut de la page ("TOP 100 — AOÛT 2026").
-// Change-le à chaque nouvelle liste, avec les nouvelles entrées.
-// ─────────────────────────────────────────────────────────────
-
-export const monthLabel = "AOÛT 2026";
+export const monthLabel = "HIJACKED RADIO";
 
 export const top100 = [
   {
     rank: 1,
-    title: "Exemple — Titre du morceau",
-    artist: "Nom de l'artiste",
-    youtubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    title: "Heart Felt",
+    artist: "xaviersobased & Rio Da Yung OG",
+    youtubeUrl: "https://www.youtube.com/watch?v=QrLkhKhaDVE",
+  },
+  {
+    rank: 2,
+    title: "CRYING",
+    artist: "SlimeGetEm",
+    youtubeUrl: "https://www.youtube.com/watch?v=Gd0qRuzPPik",
+  },
+  {
+    rank: 3,
+    title: "Premier Kata",
+    artist: "Jeune Morty",
+    youtubeUrl: "https://www.youtube.com/watch?v=1KpSEYGYhaM",
+  },
+  {
+    rank: 4,
+    title: "PAST THE SUN",
+    artist: "ST6 JodyBoof",
+    youtubeUrl: "https://www.youtube.com/watch?v=uxgSCrgWk90",
+  },
+  {
+    rank: 5,
+    title: "LOKEY",
+    artist: "Zukenee",
+    youtubeUrl: "https://www.youtube.com/watch?v=uxgSCrgWk90",
+  },
+  {
+    rank: 6,
+    title: "24Hrs",
+    artist: "Chief Keef",
+    youtubeUrl: "https://www.youtube.com/watch?v=uxgSCrgWk90",
+  },
+  {
+    rank: 7,
+    title: "Up all night",
+    artist: "Dragnutz",
+    youtubeUrl: "https://www.youtube.com/watch?v=AG2--UTIaQQ",
+  },
+  {
+    rank: 8,
+    title: "Macba",
+    artist: "YL & Papo2oo4",
+    youtubeUrl: "https://www.youtube.com/watch?v=hEDOWWWCfyA",
+  },
+  {
+    rank: 9,
+    title: "FLASHING LIGHTS",
+    artist: "BXKS",
+    youtubeUrl: "https://www.youtube.com/watch?v=9nw5c0PjEs0",
+  },
+  {
+    rank: 10,
+    title: "Break Away",
+    artist: "HavinMotion",
+    youtubeUrl: "https://www.youtube.com/watch?v=NYUTQvxMxlI",
+  },
+  {
+    rank: 11,
+    title: "ROCKIN",
+    artist: "Shoreline Mafia",
+    youtubeUrl: "https://www.youtube.com/watch?v=lLSwlkl2xkg",
+  },
+  {
+    rank: 12,
+    title: "Cuts So Deep",
+    artist: "jalenvlm",
+    youtubeUrl: "https://www.youtube.com/watch?v=O2cF1DYkvvY",
+  },
+  {
+    rank: 13,
+    title: "Wednesday",
+    artist: "Big Sad 1900",
+    youtubeUrl: "https://www.youtube.com/watch?v=dsDMa3_4skw",
+  },
+  {
+    rank: 14,
+    title: "Need Love 2",
+    artist: "EBK Young Joc",
+    youtubeUrl: "https://www.youtube.com/watch?v=WkAnvp1r--A",
+  },
+  {
+    rank: 15,
+    title: "Dodge the Devil",
+    artist: "Lil Double 0",
+    youtubeUrl: "https://www.youtube.com/watch?v=QhsYsIRALCc",
+  },
+  {
+    rank: 16,
+    title: "LE MAIRE DE SAINT DENIS",
+    artist: "Skefre & Broky Dollaz",
+    youtubeUrl: "https://www.youtube.com/watch?v=GFS9jTuUIk4",
+  },
+  {
+    rank: 17,
+    title: "JE L'HAINE À MOURIR",
+    artist: "Cherry Pie",
+    youtubeUrl: "https://www.youtube.com/watch?v=uDTMZx4AIiM",
+  },
+  {
+    rank: 18,
+    title: "Key Largo",
+    artist: "Nassbif",
+    youtubeUrl: "https://www.youtube.com/watch?v=WnRaMGWGzr4",
+  },
+  {
+    rank: 19,
+    title: "C BZ",
+    artist: "Cash Crime",
+    youtubeUrl: "https://www.youtube.com/watch?v=38nfex4hKvQ",
+  },
+  {
+    rank: 20,
+    title: "Wokisme",
+    artist: "teklam",
+    youtubeUrl: "https://www.youtube.com/watch?v=rh-ae-v86ic",
+  },
+  {
+    rank: 21,
+    title: "BLUETOOTH",
+    artist: "La Bourse",
+    youtubeUrl: "https://www.youtube.com/watch?v=3B8jFan5-xg",
+  },
+  {
+    rank: 22,
+    title: "SUR LES NERFS",
+    artist: "SAKI225",
+    youtubeUrl: "https://www.youtube.com/watch?v=hMxJumUQ9R0",
+  },
+  {
+    rank: 23,
+    title: "SUPERCOUPE",
+    artist: "Blaz Pit",
+    youtubeUrl: "https://www.youtube.com/watch?v=MupVULL9y_c",
+  },
+  {
+    rank: 24,
+    title: "KYLIAN",
+    artist: "Diddi Trix & TH",
+    youtubeUrl: "https://www.youtube.com/watch?v=rnIblEqh_Vo",
+  },
+  {
+    rank: 25,
+    title: "DRUGS AIN NUN",
+    artist: "Jaeychino",
+    youtubeUrl: "https://www.youtube.com/watch?v=lNs5IMPSafk",
+  },
+  {
+    rank: 26,
+    title: "Monetize",
+    artist: "Lelo",
+    youtubeUrl: "https://www.youtube.com/watch?v=tf5mth-NCEA",
+  },
+  {
+    rank: 27,
+    title: "Thug",
+    artist: "G Herbo",
+    youtubeUrl: "https://www.youtube.com/watch?v=-E2x80YumMI",
+  },
+  {
+    rank: 28,
+    title: "FORREDUCI",
+    artist: "TR Gobrazy",
+    youtubeUrl: "https://www.youtube.com/watch?v=Ts3FlTo86fU",
+  },
+  {
+    rank: 29,
+    title: "Night , Blooming Jasmine .",
+    artist: "fakemink",
+    youtubeUrl: "https://www.youtube.com/watch?v=o3HWW9wxRWE",
+  },
+  {
+    rank: 30,
+    title: "Pattern",
+    artist: "SINN6R & Lancey Foux",
+    youtubeUrl: "https://www.youtube.com/watch?v=xb5ptC0GazI",
   },
 ];
