@@ -1,56 +1,73 @@
 // ─────────────────────────────────────────────────────────────
 // APPS DU BUREAU — chaque entrée devient une icône sur le bureau et une
 // fenêtre qu'on peut ouvrir/déplacer/redimensionner/fermer. `component`
-// est le composant React affiché dans le corps de la fenêtre (import
-// direct depuis src/pages/).
+// est le composant React affiché dans le corps de la fenêtre.
+//
+// `chrome` (optionnel) choisit l'habillage de la fenêtre :
+//   "widget"  → pas de chrome du tout (ex. l'iPod)
+//   (absent)  → fenêtre 7.css classique (verre Aero)
 // ─────────────────────────────────────────────────────────────
 
 import Home from "../pages/Home";
-import Selections from "../pages/Selections";
-import Customs from "../pages/Customs";
-import Setup from "../pages/Setup";
-import AboutMe from "../pages/AboutMe";
+import Rulebook from "../pages/Rulebook";
+import Competition from "../pages/Competition";
+import Playlist from "../pages/Playlist";
+import Redaction from "../pages/Redaction";
+import Calendar from "../pages/Calendar";
 
 export const apps = [
   {
-    id: "about",
-    title: "About Me",
-    icon: "https://win98icons.alexmeub.com/icons/png/address_book_user-0.png",
-    component: AboutMe,
-    width: 300,
-    height: 260,
-  },
-  {
     id: "home",
     title: "Accueil",
-    icon: "https://win98icons.alexmeub.com/icons/png/msn3-4.png",
+    icon: "/icons/home.png",
     component: Home,
+    width: 320,
+    height: 440,
+    fixedSize: true,
+  },
+  {
+    id: "rulebook",
+    title: "Règlement",
+    icon: "/icons/rulebook.png",
+    component: Rulebook,
     width: 480,
-    height: 420,
+    height: 520,
   },
   {
-    id: "selections",
-    title: "Sélections",
-    icon: "https://win98icons.alexmeub.com/icons/png/cd_music-3.png",
-    component: Selections,
-    width: 520,
-    height: 480,
-  },
-  {
-    id: "customs",
-    title: "Customs CS2",
-    icon: "https://win98icons.alexmeub.com/icons/png/computer_explorer-4.png",
-    component: Customs,
-    width: 640,
+    id: "competition",
+    title: "Compétition",
+    icon: "/icons/competition.png",
+    component: Competition,
+    width: 600,
     height: 460,
+    bgWatermark: true,
   },
   {
-    id: "setup",
-    title: "Settings",
-    icon: "https://win98icons.alexmeub.com/icons/png/settings_gear-0.png",
-    component: Setup,
-    width: 520,
-    height: 500,
+    id: "playlist",
+    title: "Playlist",
+    icon: "/icons/playlist.png",
+    component: Playlist,
+    width: 360,
+    height: 520,
+    chrome: "widget",
+  },
+  {
+    id: "redaction",
+    title: "Rédaction",
+    icon: "/icons/blog.png",
+    component: Redaction,
+    width: 500,
+    height: 480,
+    bgWatermark: true,
+  },
+  {
+    id: "calendar",
+    title: "Calendrier",
+    icon: "/icons/calendar.png",
+    component: Calendar,
+    width: 480,
+    height: 320,
+    bgWatermark: true,
   },
 ];
 

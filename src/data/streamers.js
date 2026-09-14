@@ -1,9 +1,9 @@
 // ─────────────────────────────────────────────────────────────
-// CONFIG DU SITE
+// STREAMERS PARTENAIRES — affichés en icônes sur le bord droit du
+// bureau. Clique dessus → ouvre la chaîne Twitch dans un nouvel onglet.
+// Laisse le tableau vide et la bande ne s'affiche pas du tout.
 // ─────────────────────────────────────────────────────────────
 
-export const siteName = "henassa";
-
-// Lien d'invitation Discord — l'icône "Discord" sur le bureau ouvre ce
-// lien direct dans un nouvel onglet (pas une fenêtre).
-export const discordInviteUrl = "https://discord.gg/TON_CODE";
+export const partnerStreamers = [
+  // { pseudo: "exemple", twitch: "nom-de-la-chaine" },
+];

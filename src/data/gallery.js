@@ -1,9 +1,8 @@
 // ─────────────────────────────────────────────────────────────
-// CONFIG DU SITE
+// GALERIE — archive de logos/visuels, façon explorateur de fichiers.
+// Mets les fichiers dans public/gallery/, référence-les ici.
 // ─────────────────────────────────────────────────────────────
 
-export const siteName = "henassa";
-
-// Lien d'invitation Discord — l'icône "Discord" sur le bureau ouvre ce
-// lien direct dans un nouvel onglet (pas une fenêtre).
-export const discordInviteUrl = "https://discord.gg/TON_CODE";
+export const galleryItems = [
+  // { id: "logo-principal", title: "Logo principal", image: "/gallery/logo.png" },
+];

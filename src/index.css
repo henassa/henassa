@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./vendor/7.css";
 
 @theme {
   /* Couleurs utilisées à l'intérieur des fenêtres (contenu des pages). */
@@ -32,8 +33,16 @@ select {
 }
 
 :root {
-  --aero-blur: 8px;
-  --aero-saturate: 180%;
+  --start-size: 80px;
+  --aero-blur: 13px;
+  --aero-saturate: 220%;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
 }
 
 body {
@@ -104,8 +113,9 @@ body {
 .desktop-icon span {
   color: #fff;
   font-size: 11px;
+  font-weight: 600;
   text-align: center;
-  text-shadow: 1px 1px 2px #000, 0 0 6px #000;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7), 0 0 6px rgba(0, 0, 0, 0.5);
   line-height: 1.3;
   word-break: break-word;
 }
@@ -122,18 +132,6 @@ body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  padding: 0 !important;
-  margin: 0 !important;
-}
-
-.title-bar-text {
-  display: flex !important;
-  align-items: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex: 1;
-  min-width: 0;
 }
 
 .win > .window-body {
@@ -141,16 +139,47 @@ body {
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
+  position: relative;
 }
 
 .win > .window-body.no-scroll {
   overflow: hidden;
 }
 
+/* 7.css gère déjà la couleur/glow du texte de la barre de titre, mais
+   pas l'alignement icône+texte ni la troncature — on complète juste ça. */
+.title-bar-text {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.window-bg-watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 55%;
+  max-width: 220px;
+  opacity: 0.06;
+  filter: grayscale(1);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.window-content {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+}
+
 .win .status-bar {
-  background: rgba(235, 240, 248, 0.75);
-  backdrop-filter: blur(var(--aero-blur));
-  -webkit-backdrop-filter: blur(var(--aero-blur));
+  background: #ebeff3;
   border: none;
   border-top: 1px solid rgba(0, 0, 0, 0.08);
   margin: 0;
@@ -164,94 +193,86 @@ body {
   color: #444;
 }
 
-/* ── Statut Discord (About Me) ──────────────────────────────── */
-
-.sdot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #888;
-  vertical-align: middle;
-  flex-shrink: 0;
+/* ── Animations de fenêtre — ouverture et réduction ──────────────
+   Toutes les fenêtres restent dans le DOM (plus de display:none) pour
+   pouvoir animer ; réduites, elles sont juste invisibles et inertes. */
+.win-anim {
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.2s ease;
+  transform-origin: 50% 100%;
 }
 
-.s-online {
-  background: #3ba55c;
+.win-opening {
+  transform: scale(0.92);
+  opacity: 0;
 }
 
-.s-idle {
-  background: #faa61a;
-}
-
-.s-dnd {
-  background: #ed4245;
-}
-
-.s-offline {
-  background: #888;
-}
-
-.avatar-wrap {
-  position: relative;
-  display: inline-block;
-}
-
-.avatar-badge {
-  position: absolute;
-  bottom: 1px;
-  right: 1px;
-  width: 11px;
-  height: 11px;
-  border-radius: 50%;
-  border: 2px solid var(--w7-surface, #f0f0f0);
-  background: #888;
-}
-
-.social-btn-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.social-btn-grid button {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  min-width: 108px;
-  padding: 0 8px;
-  height: 22px;
-  flex: 1 1 auto;
-}
-
-.social-btn-grid button img {
-  width: 12px;
-  height: 12px;
-  flex-shrink: 0;
-}
-
-.win.glass:after {
-  content: "";
-  position: absolute;
-  inset: 0;
+.win-minimized {
+  transform: scale(0.1) translateY(60%);
+  opacity: 0;
   pointer-events: none;
+}
+
+/* ── Aero Snap — aperçu de la zone pendant le glissement ─────────── */
+.snap-preview {
+  position: absolute;
+  z-index: 8000;
+  background: rgba(90, 160, 230, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  pointer-events: none;
+  border-radius: 4px;
+  transition: left 0.1s ease, top 0.1s ease, width 0.1s ease, height 0.1s ease;
+}
+
+/* ── Aperçu au survol de la taskbar (Aero Peek) ──────────────────
+   Rend une deuxième instance réduite du contenu de l'app — un vrai
+   direct live-render, pas une capture figée, mais avec son propre
+   état interne indépendant de la fenêtre ouverte. */
+.taskbar-preview {
+  position: fixed;
+  bottom: 46px;
+  transform: translateX(-50%);
+  width: 220px;
+  z-index: 9500;
+  background: rgba(30, 34, 40, 0.85);
   backdrop-filter: blur(var(--aero-blur)) saturate(var(--aero-saturate));
   -webkit-backdrop-filter: blur(var(--aero-blur)) saturate(var(--aero-saturate));
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  cursor: pointer;
 }
 
-/* La barre de titre de 7.css est opaque par défaut — on la rend
-   semi-transparente pour que le flou verre ait quelque chose à
-   travers quoi filtrer (sinon l'effet Aero ne se voit pas du tout). */
-.win.glass .title-bar {
-  background: rgba(0, 110, 210, 0.55) !important;
+.taskbar-preview-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  color: #fff;
+  font-size: 10.5px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-.win.glass .window-body {
-  background: rgba(255, 255, 255, 0.94) !important;
+.taskbar-preview-stage {
+  height: 130px;
+  overflow: hidden;
+  background: #fff;
+  position: relative;
+}
+
+.taskbar-preview-inner {
+  width: 733px;
+  height: 433px;
+  transform: scale(0.3);
+  transform-origin: top left;
+  pointer-events: none;
+  padding: 10px;
+  overflow: hidden;
 }
 
 #taskbar {
-  --w7-w-bg: rgba(255, 255, 255, 0.55);
   position: fixed;
   bottom: 0;
   left: 0;
@@ -264,8 +285,8 @@ body {
   z-index: 9000;
   background: var(--w7-w-glass), var(--w7-w-grad);
   background-color: #00000031;
-  border-top: 1px solid #ffffff67 !important;
-  box-shadow: rgba(0, 0, 0, 0.466) 0px 0px 1px 1px;
+  border-top: 1px solid #ffffff67;
+  box-shadow: 0 -1px 6px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 #taskbar::after {
@@ -330,7 +351,7 @@ body {
 
 .tb-btn.active {
   border-color: #7ad6f8 !important;
-  box-shadow: 0 0 11px 4px #29d0ff, 0 0 3px 1px #29d0ff, var(--w7-el-sd);
+  box-shadow: 0 0 11px 4px #29d0ff, 0 0 3px 1px #29d0ff, inset 0 0 0 1px rgba(255, 255, 255, 0.5);
 }
 
 .taskbar-tray {
@@ -357,11 +378,14 @@ body {
   text-align: center;
 }
 
-/* ─────────────────────────────────────────────────────────────
-   CONTENU DES PAGES — n'existe pas dans le site original (qui n'a pas
-   de tableaux/données), ajouté pour nos besoins. Palette claire pour
-   rester cohérent avec les fenêtres 7.css.
-   ───────────────────────────────────────────────────────────── */
+a {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
+a:hover {
+  color: #0d3f80;
+}
 
 .link-box {
   background: none;
@@ -392,25 +416,668 @@ body {
   border-radius: 2px;
 }
 
-.window-body table {
-  border-collapse: collapse;
-  width: 100%;
+/* 7.css ajoute un halo bleu clair en ::before/::after sur TOUS les
+   <button> pour son survol natif — on le neutralise sur nos boutons
+   personnalisés, sinon ça laisse un carré/halo bleu parasite dessus. */
+.desktop-icon::before,
+.desktop-icon::after,
+.tb-btn::before,
+.tb-btn::after,
+.link-box::before,
+.link-box::after,
+.game-card::before,
+.game-card::after,
+.ipod-row::before,
+.ipod-row::after,
+.ipod-center::before,
+.ipod-center::after,
+.ipod-label::before,
+.ipod-label::after,
+.blog12-item::before,
+.blog12-item::after,
+.blog12-back::before,
+.blog12-back::after {
+  content: none !important;
 }
 
-.window-body th {
-  background: linear-gradient(to bottom, #eef3fa, #d6e2f0);
-  border: 1px solid #b8c6d9;
-  padding: 4px 8px;
-  text-align: left;
+.desktop-icon:focus,
+.desktop-icon:focus-visible,
+.tb-btn:focus,
+.tb-btn:focus-visible,
+.link-box:focus,
+.link-box:focus-visible,
+.game-card:focus,
+.game-card:focus-visible,
+.ipod-row:focus,
+.ipod-row:focus-visible,
+.ipod-center:focus,
+.ipod-center:focus-visible,
+.ipod-label:focus,
+.ipod-label:focus-visible,
+.blog12-item:focus,
+.blog12-item:focus-visible,
+.blog12-back:focus,
+.blog12-back:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* ── Mode widget (apps sans chrome Windows, ex. l'iPod) ─────────── */
+
+.widget-frame {
+  position: absolute;
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+
+/* La zone de drag pour tous les widgets (iPod, etc.) — une fine
+   bande invisible au-dessus de l'appareil, pour pouvoir le déplacer
+   sans interférer avec ses boutons/écran cliquables. */
+.widget-drag {
+  position: absolute;
+  inset: -10px -10px auto -10px;
+  height: 20px;
+  cursor: move;
+  z-index: 5;
+}
+
+/* ── Playlist façon iPod Classic ─────────────────────────────── */
+
+.ipod-widget {
+  position: relative;
+}
+
+.ipod {
+  width: 320px;
+  background: linear-gradient(150deg, #fafafa 0%, #e2e2e4 45%, #cfcfd2 100%);
+  border-radius: 22px;
+  padding: 10px 10px 14px;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 -1px 0 rgba(0, 0, 0, 0.15) inset,
+    0 8px 20px rgba(0, 0, 0, 0.35);
+  border: 1px solid #b9b9bc;
+}
+
+.ipod-screen {
+  background: #eef0ea;
+  border-radius: 6px;
+  border: 1px solid #9a9a90;
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.45),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+  overflow: hidden;
+}
+
+.ipod-statusbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 6px;
+  background: linear-gradient(to bottom, #d8dad2, #c3c6ba);
+  border-bottom: 1px solid #9a9a90;
+  font-size: 9px;
   font-weight: bold;
+  color: #2a2a24;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.ipod-battery {
+  width: 14px;
+  height: 7px;
+  border: 1px solid #2a2a24;
+  border-radius: 1px;
+  position: relative;
+  display: inline-block;
+}
+
+.ipod-battery::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  right: 3px;
+  background: #2a2a24;
+}
+
+.ipod-battery::before {
+  content: "";
+  position: absolute;
+  right: -3px;
+  top: 2px;
+  width: 2px;
+  height: 3px;
+  background: #2a2a24;
+}
+
+.ipod-list {
+  height: 210px;
+  overflow-y: auto;
+  background: #fff;
+}
+
+.ipod-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-width: unset;
+  min-height: unset;
+  padding: 4px 6px;
+  background: #fff;
+  border: none;
+  border-bottom: 1px solid #e4e4de;
+  box-shadow: none;
+  font-size: 10px;
+  color: #1a1a1a;
+  text-align: left;
+  cursor: pointer;
+  font-family: "Segoe UI", "Noto Sans", sans-serif;
+}
+
+.ipod-row-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ipod-chevron {
+  color: #999;
+  margin-left: 6px;
+  flex-shrink: 0;
+}
+
+.ipod-row.selected {
+  background: linear-gradient(to bottom, #5b96e8, #2f6bd1);
+  color: #fff;
+}
+
+.ipod-row.selected .ipod-chevron {
+  color: #fff;
+}
+
+.ipod-wheel {
+  position: relative;
+  width: 190px;
+  height: 190px;
+  margin: 16px auto 4px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #f4f4f4, #d2d2d4 55%, #bdbdc0 100%);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    inset 0 1px 2px rgba(255, 255, 255, 0.6);
+}
+
+.ipod-label {
+  position: absolute;
+  color: #6f6f70;
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 0.04em;
+  user-select: none;
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.ipod-label:active {
+  color: #3a3a3b;
+}
+
+.ipod-empty {
+  padding: 10px;
+  color: #999;
+  font-size: 11px;
+  text-align: center;
+}
+
+.ipod-label-menu {
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.ipod-label-prev {
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+}
+
+.ipod-label-next {
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+}
+
+.ipod-label-play {
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 13px;
+}
+
+.ipod-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 74px;
+  height: 74px;
+  min-width: unset;
+  min-height: unset;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #ffffff, #e4e4e6 70%, #d0d0d3 100%);
+  border: 1px solid #b7b7ba;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  padding: 0;
+}
+
+.ipod-center:active {
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* ── Règlement façon lecteur PDF ─────────────────────────────── */
+
+.pdf-viewer {
+  background: #6e6e76;
+  min-height: 100%;
+}
+
+.pdf-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 10px;
+  background: linear-gradient(to bottom, #4a4a52, #35353c);
+  border-bottom: 1px solid #222;
+  color: #eee;
+  font-size: 11px;
+}
+
+.pdf-zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pdf-zoom-controls button {
+  min-width: unset;
+  min-height: unset;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.pdf-toolbar-zoom {
+  color: #bbb;
+  min-width: 34px;
+  text-align: center;
+  display: inline-block;
+}
+
+.pdf-page-area {
+  padding: 20px 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.pdf-page {
+  background: #fff;
+  width: 100%;
+  max-width: 520px;
+  padding: 1.75em 1.6em;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  font-family: Georgia, "Times New Roman", serif;
+  color: #222;
+  font-size: 13px;
+}
+
+.pdf-page h1 {
+  font-size: 1.45em;
+  font-weight: bold;
+  border-bottom: 2px solid #222;
+  padding-bottom: 0.45em;
+}
+
+.pdf-subtitle {
+  color: #777;
+  font-size: 0.9em;
+  font-style: italic;
+  margin-top: 0.3em;
+}
+
+.pdf-section {
+  margin-top: 1.4em;
+}
+
+.pdf-section h2 {
+  font-size: 1.08em;
+  font-weight: bold;
+  margin-bottom: 0.45em;
+}
+
+.pdf-section p {
+  font-size: 0.95em;
+  line-height: 1.6;
+  margin-bottom: 0.45em;
+}
+
+.pdf-section ul {
+  margin: 0.3em 0 0.6em 1.5em;
+  font-size: 0.95em;
+  line-height: 1.6;
+}
+
+.game-picker {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  height: 100%;
+  align-content: center;
+}
+
+.game-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 28px 10px;
+  background: linear-gradient(to bottom, #ffffff, #eef4fb);
+  border: 1px solid #b8c6d9;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: bold;
+  color: #1a3a5c;
+}
+
+.game-card:hover {
+  background: linear-gradient(to bottom, #ffffff, #dceafc);
+  border-color: #7fb0e0;
+  box-shadow: 0 2px 6px rgba(26, 95, 180, 0.25);
+}
+
+.comp-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 8px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid #d5d9dd;
   font-size: 12px;
 }
 
-.window-body td {
-  border: 1px solid #d8e0ea;
-  padding: 4px 8px;
+/* ── Accueil façon "About Me" ─────────────────────────────────── */
+
+.home-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  min-height: 100%;
 }
 
-.window-body tbody tr:nth-child(even) td {
-  background: rgba(30, 95, 180, 0.04);
+.home-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.home-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 6px;
+  border: 1px solid #b8bcc1;
+  object-fit: cover;
+}
+
+.home-avatar-placeholder {
+  background: linear-gradient(135deg, #4a90d9, #1a5fb4);
+}
+
+.home-title {
+  font-size: 17px;
+  font-weight: bold;
+  letter-spacing: 0.03em;
+  color: #1a3a5c;
+}
+
+.home-tagline {
+  font-size: 11px;
+  color: var(--color-muted);
+}
+
+.home-bio {
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.home-card fieldset {
+  width: 100%;
+  text-align: left;
+}
+
+.home-server-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+  font-size: 11px;
+}
+
+.home-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.home-dot.online {
+  background: #2ecc40;
+  box-shadow: 0 0 4px rgba(46, 204, 64, 0.7);
+}
+
+.home-dot.offline {
+  background: #e74c3c;
+}
+
+.home-dot.unknown {
+  background: #bbb;
+}
+
+.home-server-name {
+  flex: 1;
+}
+
+.home-server-status {
+  color: var(--color-muted);
+}
+
+.home-stats {
+  display: flex;
+  justify-content: space-around;
+  text-align: center;
+}
+
+.home-stats div {
+  display: flex;
+  flex-direction: column;
+}
+
+.home-stats strong {
+  font-size: 16px;
+  color: #1a5fb4;
+}
+
+.home-stats span {
+  font-size: 10px;
+  color: var(--color-muted);
+}
+
+/* ── Rédaction façon plateforme 2012 (Tumblr-esque) ──────────────
+   Fond dégradé bleu-gris désaturé, wordmark embossé, cartes propres,
+   police Segoe UI (la vraie police système Windows, pas un choix
+   "joli mais générique" façon IA). */
+
+.blog12 {
+  padding: 18px 16px;
+  background: linear-gradient(160deg, #4a6178 0%, #34495e 55%, #24333f 100%);
+  color: #e8edf2;
+  font-family: "Segoe UI", "Noto Sans", sans-serif;
+  min-height: 100%;
+}
+
+.blog12-banner {
+  text-align: center;
+  padding: 10px 0 20px;
+}
+
+.blog12-wordmark {
+  font-size: 30px;
+  font-weight: bold;
+  color: #f4f7fa;
+  letter-spacing: -0.02em;
+  /* Effet embossé : liseré clair en haut-gauche, liseré sombre en
+     bas-droite, comme du texte pressé dans la surface. */
+  text-shadow:
+    -1px -1px 0 rgba(255, 255, 255, 0.15),
+    1px 1px 1px rgba(0, 0, 0, 0.45);
+}
+
+.blog12-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.blog12-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 12px 14px;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  width: 100%;
+}
+
+.blog12-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.blog12-thumb {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 3px;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.blog12-item-text {
+  min-width: 0;
+  flex: 1;
+}
+
+.blog12-post-thumb {
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-top: 12px;
+}
+
+.blog12-post-images {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.blog12-post-images img {
+  width: 100%;
+  border-radius: 4px;
+}
+
+.blog12-meta {
+  color: #a9b6c2;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.blog12-item-title {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.blog12-excerpt {
+  color: #c2ccd6;
+  font-size: 12px;
+  margin-top: 5px;
+  line-height: 1.55;
+}
+
+.blog12-back {
+  display: inline-block;
+  background: none;
+  border: none;
+  box-shadow: none;
+  color: #cfe0f0;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 16px;
+}
+
+.blog12-back:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.blog12-post {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 16px 18px;
+}
+
+.blog12-post-title {
+  color: #fff;
+  font-size: 21px;
+  font-weight: bold;
+  margin-top: 6px;
+  line-height: 1.3;
+  text-shadow:
+    -0.5px -0.5px 0 rgba(255, 255, 255, 0.12),
+    0.5px 0.5px 1px rgba(0, 0, 0, 0.4);
+}
+
+.blog12-post-body {
+  margin-top: 14px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #d6dee5;
+  white-space: pre-line;
 }

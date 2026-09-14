@@ -1,9 +1,9 @@
 // ─────────────────────────────────────────────────────────────
-// CONFIG DU SITE
+// JEUX — apparaissent en premier quand on ouvre l'app Compétition.
 // ─────────────────────────────────────────────────────────────
 
-export const siteName = "henassa";
-
-// Lien d'invitation Discord — l'icône "Discord" sur le bureau ouvre ce
-// lien direct dans un nouvel onglet (pas une fenêtre).
-export const discordInviteUrl = "https://discord.gg/TON_CODE";
+export const games = [
+  { id: "cs2", label: "Counter-Strike 2", icon: "/icons/game.png" },
+  { id: "lol", label: "League of Legends", icon: "/icons/game.png" },
+  { id: "valo", label: "Valorant", icon: "/icons/game.png" },
+];

@@ -1,9 +1,15 @@
 // ─────────────────────────────────────────────────────────────
-// CONFIG DU SITE
+// PROGRAMME ARTISTIQUE — les contenus/artistes mis en avant pendant la
+// diffusion (avant les matchs, pendant les pauses). Une ligne = une
+// mise en avant.
 // ─────────────────────────────────────────────────────────────
 
-export const siteName = "henassa";
-
-// Lien d'invitation Discord — l'icône "Discord" sur le bureau ouvre ce
-// lien direct dans un nouvel onglet (pas une fenêtre).
-export const discordInviteUrl = "https://discord.gg/TON_CODE";
+export const artisticProgram = [
+  {
+    date: "13/09/2026",
+    artist: "",
+    type: "", // ex. "musique", "illustration", "mix"
+    link: "",
+    description: "",
+  },
+];

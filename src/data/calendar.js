@@ -1,9 +1,13 @@
 // ─────────────────────────────────────────────────────────────
-// CONFIG DU SITE
+// CALENDRIER — les prochaines soirées pickup, en ordre chronologique.
 // ─────────────────────────────────────────────────────────────
 
-export const siteName = "henassa";
-
-// Lien d'invitation Discord — l'icône "Discord" sur le bureau ouvre ce
-// lien direct dans un nouvel onglet (pas une fenêtre).
-export const discordInviteUrl = "https://discord.gg/TON_CODE";
+export const events = [
+  {
+    date: "20/09/2026",
+    time: "20h00",
+    title: "Soirée pickup",
+    game: "CS2",
+    ladder: "mixte",
+  },
+];

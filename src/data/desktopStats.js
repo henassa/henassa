@@ -1,9 +1,11 @@
 // ─────────────────────────────────────────────────────────────
-// CONFIG DU SITE
+// STATS AFFICHÉES EN FILIGRANE — bas à droite du bureau, façon
+// "Activer Windows" mais avec de vrais chiffres. Change les valeurs
+// à la main pour l'instant (pas de calcul auto).
 // ─────────────────────────────────────────────────────────────
 
-export const siteName = "henassa";
-
-// Lien d'invitation Discord — l'icône "Discord" sur le bureau ouvre ce
-// lien direct dans un nouvel onglet (pas une fenêtre).
-export const discordInviteUrl = "https://discord.gg/TON_CODE";
+export const desktopStats = {
+  participants: 0,
+  matchesPlayed: 0,
+  discordMembers: 0,
+};

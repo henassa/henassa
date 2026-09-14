@@ -1,9 +1,13 @@
 // ─────────────────────────────────────────────────────────────
-// CONFIG DU SITE
+// PRÉSENTATION DU PROJET — affichée sur la fenêtre Accueil.
 // ─────────────────────────────────────────────────────────────
 
-export const siteName = "henassa";
-
-// Lien d'invitation Discord — l'icône "Discord" sur le bureau ouvre ce
-// lien direct dans un nouvel onglet (pas une fenêtre).
-export const discordInviteUrl = "https://discord.gg/TON_CODE";
+export const intro = {
+  title: "TRAPHOUSE",
+  tagline: "",
+  logo: "", // mets le logo Discord ici, ex. "/icons/discord-logo.png"
+  paragraphs: [
+    // "Un paragraphe de présentation du projet.",
+    // "Un deuxième paragraphe si besoin.",
+  ],
+};
