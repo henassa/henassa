@@ -140,6 +140,7 @@ body {
   overflow-y: auto;
   overflow-x: hidden;
   position: relative;
+  height:100%;
 }
 
 .win > .window-body.no-scroll {
@@ -489,7 +490,7 @@ a:hover {
 }
 
 .ipod {
-  width: 320px;
+  width: 250px;
   background: linear-gradient(150deg, #fafafa 0%, #e2e2e4 45%, #cfcfd2 100%);
   border-radius: 22px;
   padding: 10px 10px 14px;
@@ -551,7 +552,7 @@ a:hover {
 }
 
 .ipod-list {
-  height: 210px;
+  height: 175px;
   overflow-y: auto;
   background: #fff;
 }
@@ -641,14 +642,14 @@ a:hover {
 }
 
 .ipod-label-prev {
-  left: 14px;
+  left: 0px;
   top: 50%;
   transform: translateY(-50%);
   font-size: 13px;
 }
 
 .ipod-label-next {
-  right: 14px;
+  right: 0px;
   top: 50%;
   transform: translateY(-50%);
   font-size: 13px;
