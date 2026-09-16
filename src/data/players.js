@@ -28,4 +28,11 @@ export const players = [
   { id: "0x", pseudo: "0x", game: "cs2", ladder: "mixte", steamId: "76561198113356567" },
   { id: "phaayte", pseudo: "Phaayte", game: "cs2", ladder: "mixte", steamId: "76561198113791453" },
   { id: "sacha", pseudo: "sacha", game: "cs2", ladder: "mixte", steamId: "76561199090147744" },
+  { id: "950x1050ti", pseudo: "950 x 1050 ti", game: "cs2", ladder: "mixte", steamId: "76561198204597792" },
+  { id: "liquidz", pseudo: "Liquidz", game: "cs2", ladder: "mixte", steamId: "76561198935677261" },
+  { id: "nepo", pseudo: "Nepo-?", game: "cs2", ladder: "mixte", steamId: "76561198147626457" },
+  { id: "theo", pseudo: "theo", game: "cs2", ladder: "mixte", steamId: "76561198877467745" },
+  { id: "xagro", pseudo: "xagro", game: "cs2", ladder: "mixte", steamId: "76561198372275494" },
+  { id: "didou-fan-club", pseudo: "didou fan club", game: "cs2", ladder: "mixte", steamId: "76561198037161388" },
+  { id: "stannah", pseudo: "Stannah", game: "cs2", ladder: "mixte", steamId: "76561198016931975" },
 ];

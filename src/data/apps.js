@@ -46,7 +46,7 @@ export const apps = [
     component: GameApp,
     props: { gameId: g.id },
     width: 600,
-    height: 460,
+    height: 650,
     bgWatermark: true,
   })),
   {

@@ -4,8 +4,20 @@ import { matches } from "../data/matches";
 import { computeStandings, getPlayerStanding } from "../lib/ladder";
 import { useFaceitLevels } from "../lib/useFaceitLevels";
 import { useLeetifyProfiles } from "../lib/useLeetifyProfiles";
+import { rewards } from "../data/rewards";
 
 const LADDER_LABELS = { mixte: "Ladder mixte", feminin: "Ladder féminin" };
+
+function EloDelta({ value }) {
+  if (value == null) return null;
+  const positive = value >= 0;
+  return (
+    <span style={{ color: positive ? "#2ecc40" : "#e74c3c", fontSize: 11, marginLeft: 4 }}>
+      ({positive ? "+" : ""}
+      {value})
+    </span>
+  );
+}
 
 function FaceitBadge({ steamId, levels, loading }) {
   const entry = steamId ? levels[steamId] : null;
@@ -13,21 +25,22 @@ function FaceitBadge({ steamId, levels, loading }) {
   if (loading && !entry) {
     return <span className="text-muted">…</span>;
   }
-  if (!entry || entry.level == null) {
-    return <span className="text-muted">—</span>;
-  }
+
+  // Pas de compte Faceit trouvé → icône niveau 1 par défaut, plutôt
+  // qu'un tiret vide.
+  const level = entry?.level ?? 1;
 
   const badge = (
-    <img
-      src={`/ranks/cs2-faceit-${entry.level}.png`}
-      alt={`Niveau ${entry.level}`}
-      title={entry.elo != null ? `${entry.elo} elo` : `Niveau ${entry.level}`}
+    <img class="cs2-faceit-elo"
+      src={`/ranks/cs2-faceit-${level}.png`}
+      alt={`Niveau ${level}`}
+      title={entry?.elo != null ? `${entry.elo} elo` : `Niveau ${level}`}
       width={20}
       height={20}
     />
   );
 
-  return entry.faceitUrl ? (
+  return entry?.faceitUrl ? (
     <a href={entry.faceitUrl} target="_blank" rel="noreferrer">
       {badge}
     </a>
@@ -36,20 +49,88 @@ function FaceitBadge({ steamId, levels, loading }) {
   );
 }
 
+// Petite barre de progression pour les stats Leetify. `max` fixe
+// l'échelle (100 pour aim/positioning/utility, 1 pour clutch/opening
+// qui sont de petits ratios) — ajuste dans les appels si Leetify
+// change ses échelles.
+function StatBar({ label, value, max = 100 }) {
+  if (value == null) return null;
+  const pct = Math.max(0, Math.min(100, (Math.abs(value) / max) * 100));
+  const negative = value < 0;
+  return (
+    <div className="statbar">
+      <div className="statbar-label">
+        <span>{label}</span>
+        <span>{value}</span>
+      </div>
+      <div className="statbar-track">
+        <div
+          className="statbar-fill"
+          style={{ width: `${pct}%`, background: negative ? "#e74c3c" : "#2ecc40" }}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ── Petit tableau générique triable au clic sur l'en-tête ───────
+function useSort(defaultKey, defaultDir = "desc") {
+  const [sort, setSort] = useState({ key: defaultKey, dir: defaultDir });
+  function toggle(key) {
+    setSort((s) => (s.key === key ? { key, dir: s.dir === "desc" ? "asc" : "desc" } : { key, dir: "desc" }));
+  }
+  function apply(rows, getters) {
+    const getter = getters[sort.key];
+    if (!getter) return rows;
+    const sorted = [...rows].sort((a, b) => {
+      const av = getter(a);
+      const bv = getter(b);
+      if (av < bv) return sort.dir === "asc" ? -1 : 1;
+      if (av > bv) return sort.dir === "asc" ? 1 : -1;
+      return 0;
+    });
+    return sorted;
+  }
+  return { sort, toggle, apply };
+}
+
+function SortableTh({ label, sortKey, sort, onSort, style }) {
+  const active = sort.key === sortKey;
+  return (
+    <th style={{ cursor: "pointer", userSelect: "none", ...style }} onClick={() => onSort(sortKey)}>
+      {label}
+      {active && <span style={{ marginLeft: 3, fontSize: 9 }}>{sort.dir === "asc" ? "▲" : "▼"}</span>}
+    </th>
+  );
+}
+
 // ── Écran 1 : hub du jeu (onglets ladder mixte / féminin / matchs) ──
 function GameHub({ gameId, onOpenPlayer, onOpenMatch }) {
   const [tab, setTab] = useState("mixte"); // "mixte" | "feminin" | "matchs"
+  const ladderSort = useSort("elo");
+  const matchSort = useSort("date");
 
-  const ladderPlayers = computeStandings(gameId, tab === "matchs" ? "mixte" : tab);
+  const ladderPlayersRaw = computeStandings(gameId, tab === "matchs" ? "mixte" : tab);
   const showFaceit = gameId === "cs2";
   const { levels: faceitLevels, loading: faceitLoading } = useFaceitLevels(
-    showFaceit ? ladderPlayers.map((p) => p.steamId) : []
+    showFaceit ? ladderPlayersRaw.map((p) => p.steamId) : []
   );
 
-  const gameMatches = matches
-    .filter((m) => m.game === gameId && (tab === "matchs" || m.ladder === tab))
-    .slice()
-    .reverse();
+  const ladderPlayers = ladderSort.apply(ladderPlayersRaw, {
+    pseudo: (p) => p.pseudo.toLowerCase(),
+    elo: (p) => p.elo,
+    wins: (p) => p.wins,
+    losses: (p) => p.losses,
+    mvps: (p) => p.mvps,
+  });
+
+  const gameMatchesRaw = matches.filter((m) => m.game === gameId && (tab === "matchs" || m.ladder === tab));
+  const gameMatches = matchSort.apply(gameMatchesRaw, {
+    date: (m) => m.date.split("/").reverse().join(""),
+    map: (m) => m.map,
+  });
+
+  const ladderRewards = rewards[gameId]?.[tab]?.filter((r) => r.item) || [];
 
   return (
     <div>
@@ -65,53 +146,78 @@ function GameHub({ gameId, onOpenPlayer, onOpenMatch }) {
 
       <div role="tabpanel">
         {tab !== "matchs" ? (
-          <table>
-            <thead>
-              <tr>
-                <th>Joueur·se</th>
-                <th style={{ width: 60 }}>Elo</th>
-                <th style={{ width: 40 }}>V</th>
-                <th style={{ width: 40 }}>D</th>
-                <th style={{ width: 50 }}>MVP</th>
-                {showFaceit && <th style={{ width: 50 }}>Faceit</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {ladderPlayers.length === 0 && (
+          <>
+            <table>
+              <thead>
                 <tr>
-                  <td colSpan={showFaceit ? 6 : 5} className="text-muted">
-                    Personne sur ce ladder pour l'instant.
-                  </td>
+                  <SortableTh label="Joueur·se" sortKey="pseudo" sort={ladderSort.sort} onSort={ladderSort.toggle} />
+                  <SortableTh label="ELO" sortKey="elo" sort={ladderSort.sort} onSort={ladderSort.toggle} style={{ width: 80 }} />
+                  <SortableTh label="V" sortKey="wins" sort={ladderSort.sort} onSort={ladderSort.toggle} style={{ width: 40 }} />
+                  <SortableTh label="D" sortKey="losses" sort={ladderSort.sort} onSort={ladderSort.toggle} style={{ width: 40 }} />
+                  <SortableTh label="MVP" sortKey="mvps" sort={ladderSort.sort} onSort={ladderSort.toggle} style={{ width: 50 }} />
+                  {showFaceit && <th style={{ width: 50 }}>FaceIT</th>}
                 </tr>
-              )}
-              {ladderPlayers.map((p) => (
-                <tr key={p.id}>
-                  <td>
-                    <button type="button" onClick={() => onOpenPlayer(p.id)} className="link-box">
-                      {p.pseudo}
-                    </button>
-                  </td>
-                  <td>{p.elo}</td>
-                  <td>{p.wins}</td>
-                  <td>{p.losses}</td>
-                  <td>{p.mvps}</td>
-                  {showFaceit && (
-                    <td>
-                      <FaceitBadge steamId={p.steamId} levels={faceitLevels} loading={faceitLoading} />
+              </thead>
+              <tbody>
+                {ladderPlayers.length === 0 && (
+                  <tr>
+                    <td colSpan={showFaceit ? 6 : 5} className="text-muted">
+                      Personne sur ce ladder pour l'instant.
                     </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </tr>
+                )}
+                {ladderPlayers.map((p) => (
+                  <tr key={p.id}>
+                    <td>
+                      <button type="button" onClick={() => onOpenPlayer(p.id)} className="link-box">
+                        {p.pseudo}
+                      </button>
+                    </td>
+                    <td>
+                      {p.elo}
+                      <EloDelta value={p.delta} />
+                    </td>
+                    <td>{p.wins}</td>
+                    <td>{p.losses}</td>
+                    <td>{p.mvps}</td>
+                    {showFaceit && (
+                      <td>
+                        <FaceitBadge steamId={p.steamId} levels={faceitLevels} loading={faceitLoading} />
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {ladderRewards.length > 0 && (
+              <fieldset className="mt-2">
+                <legend>Récompenses</legend>
+                <div className="reward-grid">
+                  {ladderRewards.map((r, i) => (
+                    <div key={i} className="reward-card">
+                      {r.image && (
+                        <div className="reward-frame">
+                          <img src={r.image} alt={r.item} />
+                        </div>
+                      )}
+                      <p className="reward-rank">{r.rank}</p>
+                      <p className="reward-item">{r.item}</p>
+                      {r.condition && <p className="reward-condition">{r.condition}</p>}
+                    </div>
+                  ))}
+                </div>
+              </fieldset>
+            )}
+          </>
         ) : (
           <table>
             <thead>
               <tr>
-                <th style={{ width: 90 }}>Date</th>
+                <SortableTh label="Date" sortKey="date" sort={matchSort.sort} onSort={matchSort.toggle} style={{ width: 90 }} />
                 <th>Rencontre</th>
                 <th style={{ width: 70 }}>Score</th>
-                <th style={{ width: 90 }}>Map</th>
+                <SortableTh label="Map" sortKey="map" sort={matchSort.sort} onSort={matchSort.toggle} style={{ width: 90 }} />
               </tr>
             </thead>
             <tbody>
@@ -173,7 +279,10 @@ function PlayerProfile({ playerId, onBack, onOpenMatch }) {
         <tbody>
           <tr>
             <td className="text-muted">Elo</td>
-            <td>{p.elo}</td>
+            <td>
+              {p.elo}
+              <EloDelta value={p.delta} />
+            </td>
           </tr>
           <tr>
             <td className="text-muted">Victoires</td>
@@ -214,38 +323,27 @@ function PlayerProfile({ playerId, onBack, onOpenMatch }) {
           {leetifyLoading && !leetify ? (
             <p className="text-xs text-muted">Chargement…</p>
           ) : leetify ? (
-            <table>
-              <tbody>
-                <tr>
-                  <td className="text-muted">Rating</td>
-                  <td>{leetify.rating}</td>
-                </tr>
-                <tr>
-                  <td className="text-muted">Winrate</td>
-                  <td>{leetify.winrate != null ? `${Math.round(leetify.winrate * 100)}%` : "—"}</td>
-                </tr>
-                <tr>
-                  <td className="text-muted">Aim</td>
-                  <td>{leetify.aim}</td>
-                </tr>
-                <tr>
-                  <td className="text-muted">Positioning</td>
-                  <td>{leetify.positioning}</td>
-                </tr>
-                <tr>
-                  <td className="text-muted">Utility</td>
-                  <td>{leetify.utility}</td>
-                </tr>
-                <tr>
-                  <td className="text-muted">Clutch</td>
-                  <td>{leetify.clutch}</td>
-                </tr>
-                <tr>
-                  <td className="text-muted">Opening</td>
-                  <td>{leetify.opening}</td>
-                </tr>
-              </tbody>
-            </table>
+            <>
+              <table>
+                <tbody>
+                  <tr>
+                    <td className="text-muted">Rating</td>
+                    <td>{leetify.rating}</td>
+                  </tr>
+                  <tr>
+                    <td className="text-muted">Winrate</td>
+                    <td>{leetify.winrate != null ? `${Math.round(leetify.winrate * 100)}%` : "—"}</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div className="mt-2">
+                <StatBar label="Aim" value={leetify.aim} max={100} />
+                <StatBar label="Positioning" value={leetify.positioning} max={100} />
+                <StatBar label="Utility" value={leetify.utility} max={100} />
+                <StatBar label="Clutch" value={leetify.clutch} max={1} />
+                <StatBar label="Opening" value={leetify.opening} max={1} />
+              </div>
+            </>
           ) : (
             <p className="text-xs text-muted">Pas de données Leetify.</p>
           )}
@@ -262,12 +360,13 @@ function PlayerProfile({ playerId, onBack, onOpenMatch }) {
             <th style={{ width: 45 }}>K</th>
             <th style={{ width: 45 }}>D</th>
             <th style={{ width: 55 }}>Rating</th>
+            <th style={{ width: 55 }}>Elo</th>
           </tr>
         </thead>
         <tbody>
           {recentMatches.length === 0 && (
             <tr>
-              <td colSpan={6} className="text-muted">
+              <td colSpan={7} className="text-muted">
                 Aucun match pour l'instant.
               </td>
             </tr>
@@ -287,6 +386,9 @@ function PlayerProfile({ playerId, onBack, onOpenMatch }) {
                 <td>{s?.kills ?? "—"}</td>
                 <td>{s?.deaths ?? "—"}</td>
                 <td>{s?.rating ?? "—"}</td>
+                <td>
+                  <EloDelta value={p.matchDeltas?.[m.id]} />
+                </td>
               </tr>
             );
           })}

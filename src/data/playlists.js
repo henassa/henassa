@@ -195,8 +195,8 @@ export const playlists = [
         youtubeUrl: "https://youtube.com/watch?v=7J2OnaGZ9DA",
       },
       {
-        title: "Chez toi c'est chez moi (feat. Nessbeal)",
-        artist: "Rim'K",
+        title: "Chez toi c'est chez moi",
+        artist: "Rim'K & Nessbeal",
         youtubeUrl: "https://youtube.com/watch?v=i4DUand3uxs",
       },
       {

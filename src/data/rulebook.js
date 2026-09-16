@@ -1,128 +1,105 @@
 // ─────────────────────────────────────────────────────────────
-// RÈGLEMENT — le format "ladder FPL" : 2 divisions, elo individuel,
-// pick par capitaine, saison avec cashprize.
+// RÈGLEMENT TRAPHOUSE
 //
 // Chaque section = { title, body }. `body` est un tableau où chaque
 // élément est soit une string (un paragraphe), soit un objet
-// { list: [...] } pour une liste à puces. Modifie direct ce fichier,
-// aucun code à toucher pour changer le texte affiché.
+// { list: [...] } pour une liste à puces. 
 // ─────────────────────────────────────────────────────────────
 
 export const rulebook = [
   {
-    title: "Préambule",
+    title: "Préambule & Valeurs",
     body: [
-      "Cet espace se veut ouvert et sûr pour tout le monde, sans distinction de genre, d'orientation, d'origine, de handicap, de religion, de corpulence ou d'âge. On joue pour le plaisir de la compétition, pas pour tolérer qui que ce soit qui gâche ça pour les autres.",
-      "Les pronoms et l'identité de chacun·e sont respectés sans discussion — se tromper une fois arrive, refuser de corriger ne passera pas.",
-      "Si tu as un handicap, un trouble, ou juste un besoin d'aménagement particulier pour participer dans de bonnes conditions (accessibilité, rythme, communication), fais-le savoir à l'orga — on s'adapte au maximum plutôt que d'exclure.",
+      "TRAPHOUSE est un espace de gauche engagé (antifascisme, anticapitalisme, antipatriarcat, anticolonialisme). Notre but est de faire fleurir la scène esport et gaming à notre échelle pour les personnes marginalisées (genres, orientations, origines, handicaps, religions, âges...), et d'offrir un lieu safe là où la scène globale reste souvent fascisée ou apolitique.",
+      "Nous souhaitons également apporter une direction artistique authentique, en collaborant avec des artistes du cinéma, de la musique ou d'autres milieux qui nous plaisent, et en les mettant en avant.",
+      "Les pronoms et l'identité de chacun·e sont respectés sans discussion. L’autodétermination est une valeur capitale. Se tromper une fois arrive, mais refuser de corriger ou vouloir procéder à de l’assimilation ne passera pas."
     ],
   },
   {
-    title: "Format",
+    title: "Format Compétitif (CS2, LoL & VALORANT)",
     body: [
-      "Le format tourne autour d'un ladder individuel, pas d'inscription d'équipes à l'avance. Chaque soirée de pickup, les équipes sont formées sur place.",
-      "Deux divisions, séparées par niveau :",
+      "Le format s'inspire de la FPL : un ladder individuel sans inscription d'équipes à l'avance. Les équipes sont formées sur place chaque soir, basées sur l'équilibrage d'un Average ELO.",
+      "Vous pouvez rejoindre en solo, duo ou trio, tant que l'équilibrage du match reste censé. Le véto des maps (CS2 / VALORANT) se fait par un sondage personnel avec ou sans débat entre les teammates.",
+      "TRAPHOUSE propose trois divisions :",
       {
         list: [
-          "Division 1 — lvl 1 à 8 Faceit (ou rang équivalent selon le jeu, voir plus bas)",
-          "Division 2 — lvl 9-10 Faceit (ou rang équivalent)",
+          "Première division : Low ELO",
+          "Deuxième division : High ELO",
+          "Division exclusive : Joueuses et minorités de genre"
         ],
       },
-      "Une seule division tourne à la fois par soirée si le nombre de joueur·ses ne permet pas de remplir les deux serveurs — priorité donnée à la division avec le plus d'inscrit·es ce soir-là.",
+      "Maximum deux parties tournent en simultané (une par division). La priorité est donnée aux divisions avec le plus d'inscrit·es ce soir-là, avec une dérogation de priorité pour la division féminine/minorités."
     ],
   },
   {
-    title: "Système ELO",
+    title: "Division Féminine & Minorités de Genre",
     body: [
-      "Chaque joueur·se a un elo individuel, indépendant de son équipe du jour.",
-      {
-        list: [
-          "Tout le monde démarre à 1000 points à la création de son profil.",
-          "Victoire d'une map : +60.",
-          "Défaite d'une map : -60.",
-          "MVP de la map : +30 supplémentaires, calculé automatiquement d'après le rating de la map (pas de vote) — le plus haut rating HLTV 2.0 de la map gagne le bonus.",
-        ],
-      },
-      "Ce système est volontairement simple pour démarrer. S'il dérive trop après quelques semaines (des elo qui explosent ou s'effondrent sans que ça reflète le niveau réel), on passera à un gain dégressif au-delà d'un certain nombre de maps jouées.",
+      "Cette division tourne avec son propre ladder et son propre prize pool, totalement séparée du ladder mixte (qui regroupe les divisions Low et High ELO).",
+      "Elle est ouverte aux femmes et aux personnes non-binaires. Nous ne demandons aucune justification ni preuve d’identité : l’auto-détermination et la sincérité suffisent.",
+      "Des canaux exclusifs sont également disponibles sur le Discord pour les filles et les minorités de genre qui souhaitent vocal ou jouer entre elles (accès sur demande)."
     ],
   },
   {
-    title: "Organisation d'une soirée",
+    title: "Système ELO & Saisons",
     body: [
-      "Maximum 2 serveurs en simultané, jamais plus — un pour chaque division. C'est un choix assumé : moins de matchs en même temps, mais des games plus propres, plus faciles à administrer, et un vrai côté exclusif/évènementiel.",
+      "Tout le monde commence à 1000 d'ELO. Le ladder tourne sur une saison définie de plusieurs mois avec, à la fin, un classement final et une éventuelle distribution de prize pool (cash ou skins).",
+      "Gains et pertes pour les divisions High ELO et Féminine :",
       {
         list: [
-          "Horaire type : 20h–23h.",
-          "Rythme flexible selon la dispo de l'équipe d'orga — ça peut être un soir par semaine, deux fois par mois, ou plus si y'a de la demande.",
-          "Pas besoin d'un·e caster à chaque soirée pour que ça tourne.",
+          "Victoire : +60 ELO",
+          "Défaite : -60 ELO",
+          "MVP d'une map : +30 ELO",
+          "Winstreak de + de 2 maps : +10 ELO"
         ],
       },
+      "Gains et pertes pour la division Low ELO :",
+      {
+        list: [
+          "Victoire : +40 ELO",
+          "Défaite : -40 ELO",
+          "MVP d'une map : +20 ELO",
+          "Winstreak de + de 2 maps : +10 ELO"
+        ],
+      }
     ],
   },
   {
-    title: "Formation des équipes",
+    title: "Organisation d'une Soirée",
     body: [
-      "Les équipes sont formées le soir même, via un bot Discord.",
-      {
-        list: [
-          "Un·e capitaine est désigné·e par équipe (le plus souvent la personne avec le plus haut elo dispo ce soir-là, ou une personne identifiée comme fiable pour ce rôle).",
-          "Le capitanat tourne d'une soirée à l'autre — pas toujours les mêmes personnes.",
-          "Les capitaines pick leur équipe tour par tour, comme en fantasy league.",
-        ],
-      },
-      "Ensuite, veto de map classique entre les deux capitaines (ban/pick en alternance) pour déterminer la map jouée. Chaque capitaine a un budget de temps total (pas un chrono fixe à chaque étape) qu'iel répartit comme iel veut sur ses picks/bans — en cas de dépassement, le choix restant est randomisé.",
+      "Les horaires types privilégient les fins de semaine en soirée (ex: 20h00 à 23h00) pour exécuter 3 parties par division. Le rythme reste flexible selon la disponibilité du staff (1 à 2 soirs par semaine).",
+      "TRAPHOUSE compte créer du contenu autour de la compétition. Selon la disponibilité d’un·e casteureuse, vos matchs seront diffusés et commentés.",
+      "Le volet artistique tourne en parallèle de la saison : nos artistes collaborateurs sont mis en avant dans un programme avant les matchs et pendant les pauses de diffusion."
     ],
   },
   {
-    title: "Saison & cashprize",
+    title: "Code de Conduite & Tolérance Zéro",
     body: [
-      "Le ladder tourne par saison de 3 mois. À la fin de la saison, classement final basé sur l'elo, et distribution des prix.",
+      "Le respect fait partie du jeu. Traitez les autres comme vous souhaitez être traité·e, jouez honnêtement, respectez le résultat et l'ensemble des participant·es.",
+      "Le trash talk et le banter sont OK si ça reste bon enfant, que ça ne franchit pas la ligne de l'attaque personnelle, et que tout le monde est d'accord sur le moment. Pas de vannes edgy, borderline, ni de contenu NSFW.",
+      "Tolérance Zéro (exclusion immédiate) :",
       {
         list: [
-          "Le prize pool peut être mixte : cash, skins, ou autre — pas obligé d'être 100% cash.",
-          "Un volet artistique tourne en parallèle de la saison : les artistes de la communauté sont mis en avant avant les matchs et pendant les pauses.",
+          "Propos et comportements racistes, homophobes, transphobes, sexistes, validistes ou génocidaires.",
+          "Les profils incels, sionistes et fachos.",
+          "Mégenrage délibéré et répété.",
+          "Menaces, harcèlement, intimidations et triche."
         ],
       },
+      "S'il y a un dérapage lié à la frustration sans tomber dans la tolérance zéro, on discute entre adultes pour comprendre le contexte, on sensibilise et on privilégie la médiation. Évitez de transformer le serveur en garderie."
     ],
   },
   {
-    title: "Division féminine & non-binaire",
+    title: "Règles Discord Complémentaires",
     body: [
-      "Une division dédiée tourne en parallèle, avec son propre ladder et son propre prize pool — séparé du ladder mixte, pas un simple multiplicateur de points dessus.",
-      "Ouverte aux femmes (cis et trans) et aux personnes non-binaires. On ne demande aucune justification ni preuve d'identité — l'auto-détermination suffit, point final.",
-    ],
-  },
-  {
-    title: "Fair-play & code de conduite",
-    body: [
-      "Le respect entre joueur·ses fait partie du jeu autant que le niveau CS lui-même. Trois principes simples :",
       {
         list: [
-          "Traiter les autres comme tu voudrais être traité·e.",
-          "Jouer honnêtement, s'investir, respecter le résultat.",
-          "Respecter tout le monde — coéquipier·es, adversaires, orga.",
+          "Soyez cools et bienveillant·es.",
+          "En cas de souci ou comportement problématique, venez le dire au staff.",
+          "Pour inviter quelqu’un, passez d'abord par l'administration pour garder une bonne ambiance sélective.",
+          "Ne faites pas de publicité publique ou massive pour le serveur ailleurs.",
+          "Pour proposer un jeu ou une activité, n'hésitez pas, l'espace est à vous."
         ],
-      },
-      "Le trash talk, les vannes, et soutenir sa team ou son pays avec un peu de fougue, c'est normal et ça fait partie de la compétition — tant que ça reste bon enfant et que ça ne franchit pas la ligne vers l'attaque personnelle.",
-      "Zero tolérance, sanction immédiate (ban permanent du ladder, pas de deuxième chance) :",
-      {
-        list: [
-          "Propos racistes, homophobes, transphobes, sexistes, validistes, ou toute attaque sur qui quelqu'un est (identité de genre, orientation, origine, handicap, physique, religion...).",
-          "Mégenrage délibéré et répété, une fois corrigé une première fois.",
-          "Doxing (partager ou menacer de partager les infos perso de quelqu'un).",
-          "Menaces, harcèlement, intimidation.",
-          "Triche (cheat, exploit).",
-        ],
-      },
-      "Pour tout le reste (une sortie un peu trop chaude après un round perdu, un clash qui dégénère sans tomber dans le zero-tolerance) : on regarde le contexte, pas juste les mots. Une escalade progressive plutôt qu'une sanction fixe :",
-      {
-        list: [
-          "1er avertissement : rappel à l'ordre, pas de sanction.",
-          "2e : exclusion de la soirée en cours.",
-          "3e : suspension du ladder pour le reste de la saison.",
-        ],
-      },
-      "Smurf et partage de compte : ban du ladder pour la saison en cours dès le premier cas avéré (pas d'escalade progressive là-dessus, ça fausse directement le classement de tout le monde). Pour limiter les risques en amont, un compte Steam avec un minimum d'ancienneté est demandé à l'inscription.",
+      }
     ],
   },
 ];
