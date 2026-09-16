@@ -1,15 +1,22 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { playlists } from "../data/playlists";
 
-export default function Playlist() {
+export default function Playlist({ onClose }) {
   // screen: "playlists" (liste des playlists) ou "tracks" (pistes de la playlist choisie)
   const [screen, setScreen] = useState("playlists");
   const [playlistIndex, setPlaylistIndex] = useState(0);
   const [trackIndex, setTrackIndex] = useState(0);
+  const rowRefs = useRef([]);
 
   const items = screen === "playlists" ? playlists : playlists[playlistIndex]?.tracks || [];
   const selected = screen === "playlists" ? playlistIndex : trackIndex;
   const setSelected = screen === "playlists" ? setPlaylistIndex : setTrackIndex;
+
+  // Fait suivre la sélection à l'écran (scroll programmé) — jamais à
+  // la souris/au doigt, uniquement quand on navigue aux boutons.
+  useEffect(() => {
+    rowRefs.current[selected]?.scrollIntoView({ block: "nearest" });
+  }, [selected, screen]);
 
   function move(delta) {
     if (items.length === 0) return;
@@ -45,43 +52,32 @@ export default function Playlist() {
             <span>{title}</span>
             <span className="ipod-battery" />
           </div>
-          <div className="ipod-list">
+          <div className="ipod-list" onWheel={(e) => e.preventDefault()} onTouchMove={(e) => e.preventDefault()}>
             {items.length === 0 && <p className="ipod-empty">vide</p>}
 
             {screen === "playlists" &&
               playlists.map((pl, i) => (
-                <button
+                <div
                   key={pl.id}
-                  type="button"
+                  ref={(el) => (rowRefs.current[i] = el)}
                   className={"ipod-row" + (i === selected ? " selected" : "")}
-                  onMouseEnter={() => setPlaylistIndex(i)}
-                  onClick={() => {
-                    setPlaylistIndex(i);
-                    setScreen("tracks");
-                    setTrackIndex(0);
-                  }}
                 >
                   <span className="ipod-row-text">{pl.label}</span>
                   <span className="ipod-chevron">›</span>
-                </button>
+                </div>
               ))}
 
             {screen === "tracks" &&
               (playlists[playlistIndex]?.tracks || []).map((track, i) => (
-                <button
+                <div
                   key={i}
-                  type="button"
+                  ref={(el) => (rowRefs.current[i] = el)}
                   className={"ipod-row" + (i === selected ? " selected" : "")}
-                  onMouseEnter={() => setTrackIndex(i)}
-                  onClick={() => {
-                    setTrackIndex(i);
-                    window.open(track.youtubeUrl, "_blank");
-                  }}
                 >
                   <span className="ipod-row-text">
                     {track.artist} – {track.title}
                   </span>
-                </button>
+                </div>
               ))}
           </div>
         </div>
@@ -96,7 +92,9 @@ export default function Playlist() {
           <button type="button" className="ipod-label ipod-label-next" onClick={() => move(1)}>
             ⏭
           </button>
-          <span className="ipod-label ipod-label-play">⏯</span>
+          <button type="button" className="ipod-label ipod-label-play" onClick={onClose}>
+            EXIT
+          </button>
           <button type="button" className="ipod-center" onClick={pressCenter} aria-label="select" />
         </div>
       </div>

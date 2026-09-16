@@ -51,6 +51,7 @@ export const handler = async (event) => {
       const data = await res.json();
       const entry = {
         elo: data.games?.cs2?.faceit_elo ?? null,
+        level: data.games?.cs2?.skill_level ?? null,
         nickname: data.nickname || null,
         faceitUrl: data.faceit_url ? data.faceit_url.replace("{lang}", "en") : null,
       };

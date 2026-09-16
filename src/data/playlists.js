@@ -155,4 +155,65 @@ export const playlists = [
       },
     ],
   },
+  {
+    id: "nous-seulement",
+    label: "NOUS ET NOUS SEULEMENT",
+    tracks: [
+      {
+        title: "On allume",
+        artist: "Salif",
+        youtubeUrl: "https://youtube.com/watch?v=GMiwjyp4KfQ",
+      },
+      {
+        title: "L'histoire d'un mec qui coule",
+        artist: "Nessbeal",
+        youtubeUrl: "https://youtube.com/watch?v=kJTQEnfaD40",
+      },
+      {
+        title: "J'arrive",
+        artist: "Rohff",
+        youtubeUrl: "https://youtube.com/watch?v=5cBJyaN_eV0",
+      },
+      {
+        title: "Comme les autres",
+        artist: "Niro",
+        youtubeUrl: "https://youtube.com/watch?v=Lsex2OKm1f0",
+      },
+      {
+        title: "Ma destinée",
+        artist: "Youssoupha",
+        youtubeUrl: "https://youtube.com/watch?v=7lOdJTw7j4Q",
+      },
+      {
+        title: "Petit frère / petite sœur",
+        artist: "Mac Tyer",
+        youtubeUrl: "https://youtube.com/watch?v=zH4_S4CvjDQ",
+      },
+      {
+        title: "Atroce cité",
+        artist: "Nubi",
+        youtubeUrl: "https://youtube.com/watch?v=7J2OnaGZ9DA",
+      },
+      {
+        title: "Chez toi c'est chez moi (feat. Nessbeal)",
+        artist: "Rim'K",
+        youtubeUrl: "https://youtube.com/watch?v=i4DUand3uxs",
+      },
+      {
+        title: "C Pas Parce Que",
+        artist: "Sefyu",
+        youtubeUrl: "https://youtube.com/watch?v=-EEWlOuHuEY",
+      },
+      {
+        title: "Mektoub",
+        artist: "Sadek",
+        youtubeUrl: "https://youtube.com/watch?v=PZtPy1uKhP4",
+      },
+      {
+        title: "Jardin de Tivoli",
+        artist: "M City",
+        youtubeUrl: "https://youtube.com/watch?v=r6GdhC12n48",
+      },
+    ],
+  },
 ];

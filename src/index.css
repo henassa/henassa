@@ -23,6 +23,12 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+button {
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  -webkit-touch-callout: none;
 }
 
 input,
@@ -137,10 +143,10 @@ body {
 .win > .window-body {
   flex: 1;
   min-height: 0;
+  height:100%;
   overflow-y: auto;
   overflow-x: hidden;
   position: relative;
-  height:100%;
 }
 
 .win > .window-body.no-scroll {
@@ -207,23 +213,16 @@ body {
   opacity: 0;
 }
 
-.win-minimized {
-  transform: scale(0.1) translateY(60%);
+.win-closing {
+  transform: scale(0.92);
   opacity: 0;
   pointer-events: none;
 }
 
-/* ── Aero Snap — aperçu de la zone pendant le glissement ─────────── */
-.snap-preview {
-  position: absolute;
-  z-index: 8000;
-  background: rgba(90, 160, 230, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+.win-minimized {
+  transform: scale(0.1) translateY(60%);
+  opacity: 0;
   pointer-events: none;
-  border-radius: 4px;
-  transition: left 0.1s ease, top 0.1s ease, width 0.1s ease, height 0.1s ease;
 }
 
 /* ── Aperçu au survol de la taskbar (Aero Peek) ──────────────────
@@ -437,7 +436,11 @@ a:hover {
 .blog12-item::before,
 .blog12-item::after,
 .blog12-back::before,
-.blog12-back::after {
+.blog12-back::after,
+.sub-item::before,
+.sub-item::after,
+.sub-back::before,
+.sub-back::after {
   content: none !important;
 }
 
@@ -458,7 +461,11 @@ a:hover {
 .blog12-item:focus,
 .blog12-item:focus-visible,
 .blog12-back:focus,
-.blog12-back:focus-visible {
+.blog12-back:focus-visible,
+.sub-item:focus,
+.sub-item:focus-visible,
+.sub-back:focus,
+.sub-back:focus-visible {
   outline: none !important;
   box-shadow: none !important;
 }
@@ -470,6 +477,95 @@ a:hover {
   background: none;
   border: none;
   box-shadow: none;
+}
+
+/* ── Chrome "Internet Explorer" (Rédaction) ──────────────────────── */
+
+.ie-win {
+  background: #fff;
+}
+
+.ie-tabbar {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 4px 6px 0;
+  background: linear-gradient(to bottom, #dfe6ee, #c9d3de);
+  border-bottom: 1px solid #9aa7b5;
+}
+
+.ie-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: 1px solid #9aa7b5;
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  padding: 4px 14px;
+  font-size: 11px;
+  color: #222;
+}
+
+.ie-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  background: #eef1f5;
+  border-bottom: 1px solid #b9c2cd;
+}
+
+.ie-nav-btn {
+  color: #445;
+  font-size: 13px;
+  width: 18px;
+  text-align: center;
+  user-select: none;
+  cursor: pointer;
+}
+
+.ie-nav-btn-disabled {
+  color: #b7bfc9;
+  cursor: default;
+}
+
+.ie-address {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: 1px solid #8b95a1;
+  border-radius: 2px;
+  padding: 3px 8px;
+  font-size: 11px;
+  color: #333;
+  font-family: "Segoe UI", "Noto Sans", sans-serif;
+}
+
+.ie-go-btn {
+  background: linear-gradient(to bottom, #7fc26a, #4c9a3a);
+  color: #fff;
+  border: 1px solid #3d7d2e;
+  border-radius: 2px;
+  width: 22px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.ie-go-btn-disabled {
+  background: linear-gradient(to bottom, #cfd6cb, #b7c0b3);
+  border-color: #9aa396;
+  cursor: default;
+}
+
+.ie-body {
+  padding: 0 !important;
 }
 
 /* La zone de drag pour tous les widgets (iPod, etc.) — une fine
@@ -552,9 +648,15 @@ a:hover {
 }
 
 .ipod-list {
-  height: 175px;
+  height: 150px;
   overflow-y: auto;
   background: #fff;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.ipod-list::-webkit-scrollbar {
+  display: none;
 }
 
 .ipod-row {
@@ -572,7 +674,6 @@ a:hover {
   font-size: 10px;
   color: #1a1a1a;
   text-align: left;
-  cursor: pointer;
   font-family: "Segoe UI", "Noto Sans", sans-serif;
 }
 
@@ -616,12 +717,16 @@ a:hover {
   font-weight: bold;
   letter-spacing: 0.04em;
   user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
   background: none;
   border: none;
   box-shadow: none;
   padding: 0;
   cursor: pointer;
   font-family: inherit;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .ipod-label:active {
@@ -642,14 +747,14 @@ a:hover {
 }
 
 .ipod-label-prev {
-  left: 0px;
+  left: -5px;
   top: 50%;
   transform: translateY(-50%);
   font-size: 13px;
 }
 
 .ipod-label-next {
-  right: 0px;
+  right: -5px;
   top: 50%;
   transform: translateY(-50%);
   font-size: 13px;
@@ -659,7 +764,8 @@ a:hover {
   bottom: 12px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 13px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
 }
 
 .ipod-center {
@@ -677,11 +783,49 @@ a:hover {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.8);
   cursor: pointer;
   padding: 0;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .ipod-center:active {
+  background: radial-gradient(circle at 40% 35%, #ffffff, #e4e4e6 70%, #d0d0d3 100%);
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
 }
+
+/* Zéro effet visuel sur les boutons de la molette, quel que soit
+   l'état (survol, appui, focus) — forcé avec !important car certains
+   navigateurs mobiles appliquent un style natif qu'aucune des
+   méthodes "propres" (tap-highlight, appearance, outline) n'arrivait
+   à couvrir entièrement. */
+.ipod-label,
+.ipod-label:hover,
+.ipod-label:active,
+.ipod-label:focus,
+.ipod-label:focus-visible,
+.ipod-label:visited {
+  background: none !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.ipod-center,
+.ipod-center:hover,
+.ipod-center:focus,
+.ipod-center:focus-visible,
+.ipod-center:visited {
+  background: radial-gradient(circle at 40% 35%, #ffffff, #e4e4e6 70%, #d0d0d3 100%) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.8) !important;
+  outline: none !important;
+}
+
+.ipod-center:active {
+  background: radial-gradient(circle at 40% 35%, #ffffff, #e4e4e6 70%, #d0d0d3 100%) !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+  outline: none !important;
+}
+
 
 /* ── Règlement façon lecteur PDF ─────────────────────────────── */
 
@@ -778,7 +922,6 @@ a:hover {
 }
 
 .game-picker {
-  padding: 10px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 14px;
@@ -825,10 +968,8 @@ a:hover {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 8px;
   text-align: center;
-  min-height: 100%;
 }
 
 .home-header {
@@ -872,42 +1013,6 @@ a:hover {
   text-align: left;
 }
 
-.home-server-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 3px 0;
-  font-size: 11px;
-}
-
-.home-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.home-dot.online {
-  background: #2ecc40;
-  box-shadow: 0 0 4px rgba(46, 204, 64, 0.7);
-}
-
-.home-dot.offline {
-  background: #e74c3c;
-}
-
-.home-dot.unknown {
-  background: #bbb;
-}
-
-.home-server-name {
-  flex: 1;
-}
-
-.home-server-status {
-  color: var(--color-muted);
-}
-
 .home-stats {
   display: flex;
   justify-content: space-around;
@@ -929,157 +1034,183 @@ a:hover {
   color: var(--color-muted);
 }
 
-/* ── Rédaction façon plateforme 2012 (Tumblr-esque) ──────────────
-   Fond dégradé bleu-gris désaturé, wordmark embossé, cartes propres,
-   police Segoe UI (la vraie police système Windows, pas un choix
-   "joli mais générique" façon IA). */
+/* ── Rédaction façon Substack ─────────────────────────────────────
+   Fond clair, typographie éditoriale (Georgia pour les titres, comme
+   la vraie vue lecture Substack), liste en lignes fines séparées par
+   un filet plutôt qu'en cartes, vignette carrée à droite. */
 
-.blog12 {
-  padding: 18px 16px;
-  background: linear-gradient(160deg, #4a6178 0%, #34495e 55%, #24333f 100%);
-  color: #e8edf2;
+.sub {
+  padding: 22px 24px 140px;
+  background: #fff;
+  color: #1a1a1a;
   font-family: "Segoe UI", "Noto Sans", sans-serif;
   min-height: 100%;
 }
 
-.blog12-banner {
-  text-align: center;
-  padding: 10px 0 20px;
+.sub-banner {
+  padding-bottom: 16px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid #e2e2e2;
 }
 
-.blog12-wordmark {
-  font-size: 30px;
+.sub-wordmark {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 26px;
   font-weight: bold;
-  color: #f4f7fa;
-  letter-spacing: -0.02em;
-  /* Effet embossé : liseré clair en haut-gauche, liseré sombre en
-     bas-droite, comme du texte pressé dans la surface. */
-  text-shadow:
-    -1px -1px 0 rgba(255, 255, 255, 0.15),
-    1px 1px 1px rgba(0, 0, 0, 0.45);
+  color: #1a1a1a;
 }
 
-.blog12-list {
+.sub-tagline {
+  color: #6b6b6b;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.sub-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
 }
 
-.blog12-item {
+.sub-item {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  justify-content: space-between;
+  gap: 16px;
   text-align: left;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  padding: 12px 14px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid #eee;
+  box-shadow: none;
+  padding: 18px 0;
   cursor: pointer;
   font-family: inherit;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
   width: 100%;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
-.blog12-item:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
+.sub-item,
+.sub-item:hover,
+.sub-item:active,
+.sub-item:focus,
+.sub-item:focus-visible,
+.sub-item:visited {
+  background: none !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
 }
 
-.blog12-thumb {
-  width: 56px;
-  height: 56px;
-  object-fit: cover;
-  border-radius: 3px;
-  flex-shrink: 0;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+.sub-item:hover .sub-item-title {
+  text-decoration: underline;
 }
 
-.blog12-item-text {
+.sub-item-text {
   min-width: 0;
   flex: 1;
 }
 
-.blog12-post-thumb {
-  width: 100%;
-  max-height: 220px;
-  object-fit: cover;
-  border-radius: 4px;
-  margin-top: 12px;
-}
-
-.blog12-post-images {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 14px;
-}
-
-.blog12-post-images img {
-  width: 100%;
-  border-radius: 4px;
-}
-
-.blog12-meta {
-  color: #a9b6c2;
-  font-size: 10.5px;
+.sub-date {
+  color: #8a8a8a;
+  font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
 }
 
-.blog12-item-title {
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
+.sub-item-title {
+  font-family: Georgia, "Times New Roman", serif;
+  color: #1a1a1a;
+  font-size: 17px;
+  font-weight: bold;
   margin-top: 4px;
+  line-height: 1.3;
 }
 
-.blog12-excerpt {
-  color: #c2ccd6;
-  font-size: 12px;
+.sub-excerpt {
+  color: #666;
+  font-size: 12.5px;
   margin-top: 5px;
-  line-height: 1.55;
+  line-height: 1.5;
 }
 
-.blog12-back {
+.sub-thumb {
+  width: 130px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  border: 1px solid #e6e6e6;
+  object-fit: contain;
+  align-self: flex-start;
+}
+
+.sub-back {
   display: inline-block;
   background: none;
   border: none;
   box-shadow: none;
-  color: #cfe0f0;
+  color: #6b6b6b;
   font-size: 12px;
   font-family: inherit;
   cursor: pointer;
   padding: 0;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
-.blog12-back:hover {
-  color: #fff;
+.sub-back:hover {
+  color: #1a1a1a;
   text-decoration: underline;
 }
 
-.blog12-post {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  padding: 16px 18px;
+.sub-reader {
+  max-width: clamp(480px, 68%, 760px);
+  margin: 0 auto;
 }
 
-.blog12-post-title {
-  color: #fff;
-  font-size: 21px;
+.sub-headline {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 27px;
   font-weight: bold;
+  color: #1a1a1a;
+  line-height: 1.25;
   margin-top: 6px;
-  line-height: 1.3;
-  text-shadow:
-    -0.5px -0.5px 0 rgba(255, 255, 255, 0.12),
-    0.5px 0.5px 1px rgba(0, 0, 0, 0.4);
 }
 
-.blog12-post-body {
-  margin-top: 14px;
-  font-size: 13px;
-  line-height: 1.7;
-  color: #d6dee5;
-  white-space: pre-line;
+.sub-hero {
+  display: block;
+  max-width: 100%;
+  max-height: 420px;
+  margin: 18px auto 0;
+  border-radius: 4px;
+  border: 1px solid #eee;
+}
+
+.sub-body {
+  margin-top: 20px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 15.5px;
+  line-height: 1.75;
+  color: #262626;
+}
+
+.sub-body p {
+  margin-bottom: 16px;
+}
+
+.sub-body p:last-child {
+  margin-bottom: 0;
+}
+
+.sub-lead {
+  font-size: 16.5px;
+}
+
+.sub-inline-img {
+  display: block;
+  width: 100%;
+  border-radius: 4px;
+  border: 1px solid #eee;
+  margin: 4px 0 20px;
 }

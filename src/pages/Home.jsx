@@ -1,30 +1,8 @@
 import { intro } from "../data/intro";
-import { cs2Servers } from "../data/servers";
 import { players } from "../data/players";
 import { matches } from "../data/matches";
 import { discordInviteUrl } from "../data/config";
 import { useDiscordMemberCount } from "../lib/useDiscordMemberCount";
-import { useServerStatus } from "../lib/useServerStatus";
-
-function ServerRow({ server }) {
-  const status = useServerStatus(server.battlemetricsId);
-
-  return (
-    <div className="home-server-row">
-      <span className={"home-dot " + (status?.online ? "online" : status ? "offline" : "unknown")} />
-      <span className="home-server-name">{server.name}</span>
-      <span className="home-server-status">
-        {!server.battlemetricsId
-          ? "non configuré"
-          : status == null
-          ? "…"
-          : status.online
-          ? `en ligne · ${status.players}/${status.maxPlayers}`
-          : "hors ligne"}
-      </span>
-    </div>
-  );
-}
 
 export default function Home() {
   const participants = new Set(players.map((p) => p.pseudo)).size;
@@ -54,13 +32,6 @@ export default function Home() {
           remplis <code>src/data/intro.js</code> pour la présentation du projet.
         </p>
       )}
-
-      <fieldset>
-        <legend>Serveurs CS2</legend>
-        {cs2Servers.map((s, i) => (
-          <ServerRow key={i} server={s} />
-        ))}
-      </fieldset>
 
       <fieldset>
         <legend>Stats</legend>

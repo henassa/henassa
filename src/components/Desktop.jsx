@@ -4,8 +4,6 @@ import { discordInviteUrl } from "../data/config";
 import WindowFrame from "./WindowFrame";
 import StreamerDock from "./StreamerDock";
 
-const SNAP_MARGIN = 24;
-
 function TrayClock() {
   const [now, setNow] = useState(new Date());
   useEffect(() => {
@@ -35,7 +33,6 @@ function initialWindows() {
       minimized: false,
       maximized: false,
       prevRect: null,
-      snapZone: null,
     },
   ];
 }
@@ -44,9 +41,8 @@ export default function Desktop() {
   const [windows, setWindows] = useState(initialWindows);
   const [nextZ, setNextZ] = useState(11);
   const [justOpenedId, setJustOpenedId] = useState(null);
-  const [snapPreview, setSnapPreview] = useState(null); // "left" | "right" | "top" | null
+  const [closingId, setClosingId] = useState(null);
   const [hoverPreview, setHoverPreview] = useState(null); // { appId, x }
-  const areaRef = useRef(null);
   const tbRefs = useRef({});
 
   // La fenêtre "Accueil" ouverte par défaut a aussi droit à l'anim
@@ -59,13 +55,6 @@ export default function Desktop() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  function areaSize() {
-    const el = areaRef.current;
-    if (!el) return { width: 1200, height: 800 };
-    const r = el.getBoundingClientRect();
-    return { width: r.width, height: r.height };
-  }
 
   function openApp(appId) {
     setWindows((prev) => {
@@ -87,7 +76,6 @@ export default function Desktop() {
           minimized: false,
           maximized: false,
           prevRect: null,
-          snapZone: null,
         },
       ];
     });
@@ -97,7 +85,11 @@ export default function Desktop() {
   }
 
   function closeWindow(appId) {
-    setWindows((prev) => prev.filter((w) => w.appId !== appId));
+    setClosingId(appId);
+    setTimeout(() => {
+      setWindows((prev) => prev.filter((w) => w.appId !== appId));
+      setClosingId((cur) => (cur === appId ? null : cur));
+    }, 200);
   }
 
   function focusWindow(appId) {
@@ -116,12 +108,11 @@ export default function Desktop() {
       prev.map((w) => {
         if (w.appId !== appId) return w;
         if (w.maximized) {
-          return { ...w, maximized: false, ...w.prevRect, prevRect: null, snapZone: null };
+          return { ...w, maximized: false, ...w.prevRect, prevRect: null };
         }
         return {
           ...w,
           maximized: true,
-          snapZone: null,
           prevRect: { x: w.x, y: w.y, width: w.width, height: w.height },
           x: 0,
           y: 0,
@@ -156,51 +147,6 @@ export default function Desktop() {
     setWindows((prev) => prev.map((w) => (w.appId === appId ? { ...w, ...size } : w)));
   }
 
-  // ── Aero Snap ────────────────────────────────────────────────
-  // Pendant le drag : détecte la proximité d'un bord et affiche
-  // l'aperçu de zone (bandeau bleu translucide).
-  function handleDragging(x, y) {
-    const { width: areaW } = areaSize();
-    if (y <= SNAP_MARGIN) setSnapPreview("top");
-    else if (x <= SNAP_MARGIN) setSnapPreview("left");
-    else if (x + 200 >= areaW - SNAP_MARGIN) setSnapPreview("right");
-    else setSnapPreview(null);
-  }
-
-  // Au lâcher : si une zone était active, on redimensionne la
-  // fenêtre en conséquence (comme le vrai Aero Snap de Windows 7).
-  function handleDragEnd(appId, x, y) {
-    const zone = snapPreview;
-    setSnapPreview(null);
-    if (!zone) {
-      moveWindow(appId, { x, y });
-      return;
-    }
-    const { width: areaW, height: areaH } = areaSize();
-    setWindows((prev) =>
-      prev.map((w) => {
-        if (w.appId !== appId) return w;
-        const prevRect = w.snapZone ? w.prevRect : { x: w.x, y: w.y, width: w.width, height: w.height };
-        if (zone === "top") {
-          return { ...w, maximized: true, snapZone: "top", prevRect, x: 0, y: 0, width: "100%", height: "100%" };
-        }
-        if (zone === "left") {
-          return { ...w, maximized: false, snapZone: "left", prevRect, x: 0, y: 0, width: areaW / 2, height: areaH };
-        }
-        return {
-          ...w,
-          maximized: false,
-          snapZone: "right",
-          prevRect,
-          x: areaW / 2,
-          y: 0,
-          width: areaW / 2,
-          height: areaH,
-        };
-      })
-    );
-  }
-
   // ── Aperçu au survol de la taskbar ──────────────────────────────
   function showPreview(appId) {
     const btn = tbRefs.current[appId];
@@ -211,7 +157,7 @@ export default function Desktop() {
 
   return (
     <div id="desktop">
-      <div id="desktop-area" ref={areaRef}>
+      <div id="desktop-area">
         <div id="desktop-icons">
           {apps.map((app) => (
             <button key={app.id} type="button" className="desktop-icon" onClick={() => openApp(app.id)}>
@@ -231,19 +177,6 @@ export default function Desktop() {
 
         <StreamerDock />
 
-        {snapPreview && (
-          <div
-            className="snap-preview"
-            style={
-              snapPreview === "top"
-                ? { left: 0, top: 0, width: "100%", height: "100%" }
-                : snapPreview === "left"
-                ? { left: 0, top: 0, width: "50%", height: "100%" }
-                : { left: "50%", top: 0, width: "50%", height: "100%" }
-            }
-          />
-        )}
-
         {windows.map((w) => {
           const app = findApp(w.appId);
           if (!app) return null;
@@ -257,14 +190,13 @@ export default function Desktop() {
               minimized={w.minimized}
               maximized={w.maximized}
               justOpened={justOpenedId === w.appId}
+              closing={closingId === w.appId}
               onFocus={() => focusWindow(w.appId)}
               onClose={() => closeWindow(w.appId)}
               onMinimize={() => toggleMinimize(w.appId)}
               onMaximize={() => toggleMaximize(w.appId)}
               onMove={(pos) => moveWindow(w.appId, pos)}
               onResize={(size) => resizeWindow(w.appId, size)}
-              onDragging={handleDragging}
-              onDragEnd={(x, y) => handleDragEnd(w.appId, x, y)}
             />
           );
         })}
@@ -289,7 +221,7 @@ export default function Desktop() {
               </div>
               <div className="taskbar-preview-stage">
                 <div className="taskbar-preview-inner">
-                  <app.component />
+                  <app.component {...app.props} />
                 </div>
               </div>
             </div>
