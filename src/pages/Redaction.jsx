@@ -92,7 +92,7 @@ export default function Redaction({ onNavReady }) {
             <div className="sub-item-text">
               <p className="sub-date">{p.date}</p>
               <p className="sub-item-title">{p.title}</p>
-              <p className="sub-excerpt">{p.body[0]?.slice(0, 320)}…</p>
+              <p className="sub-excerpt">{p.body[0]?.slice(0, 600)}…</p>
             </div>
           </button>
         ))}

@@ -99,7 +99,7 @@ export default function WindowFrame({
           </span>
           <div className="ie-address">
             <img src={app.icon} alt="" width={13} height={13} />
-            <span>http://henassa.co/{app.id}</span>
+            <span>http://backfromthetraphouse.ps/{app.id}</span>
           </div>
           <span
             className={"ie-go-btn" + (!nav.canNext ? " ie-go-btn-disabled" : "")}

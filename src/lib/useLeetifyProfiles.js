@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 
-// Récupère le niveau Faceit (1-10) et l'elo d'une liste de steamId64,
-// via la fonction serveur /.netlify/functions/faceit-elo (qui gère la
-// clé API et le cache 24h côté Netlify Blobs).
+// Récupère le profil Leetify (rating, aim, positioning, utility,
+// clutch, opening...) d'une liste de steamId64, via la fonction
+// serveur /.netlify/functions/leetify-profile.
 //
 // Ne fonctionne qu'une fois déployé sur Netlify (ou en local via
 // `netlify dev`) — avec un simple `npm run dev`, cette route n'existe
 // pas et le hook renvoie juste un objet vide, sans planter.
-export function useFaceitLevels(steamIds) {
+export function useLeetifyProfiles(steamIds) {
   const [data, setData] = useState({});
   const [loading, setLoading] = useState(false);
   const key = (steamIds || []).filter(Boolean).join(",");
@@ -16,7 +16,7 @@ export function useFaceitLevels(steamIds) {
     if (!key) return;
     let cancelled = false;
     setLoading(true);
-    fetch(`/.netlify/functions/faceit-elo?steamids=${key}`)
+    fetch(`/.netlify/functions/leetify-profile?steamids=${key}`)
       .then((r) => r.json())
       .then((json) => {
         if (!cancelled) setData(json);
@@ -30,5 +30,5 @@ export function useFaceitLevels(steamIds) {
     };
   }, [key]);
 
-  return { levels: data, loading }; // levels: { [steamId]: { elo, level, nickname, faceitUrl } }
+  return { profiles: data, loading };
 }

@@ -28,7 +28,7 @@ export const apps = [
     icon: "/icons/home.png",
     component: Home,
     width: 320,
-    height: 260,
+    height: 270,
     fixedSize: true,
   },
   {

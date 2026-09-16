@@ -3,39 +3,30 @@ import { players } from "../data/players";
 import { matches } from "../data/matches";
 import { computeStandings, getPlayerStanding } from "../lib/ladder";
 import { useFaceitLevels } from "../lib/useFaceitLevels";
+import { useLeetifyProfiles } from "../lib/useLeetifyProfiles";
 
 const LADDER_LABELS = { mixte: "Ladder mixte", feminin: "Ladder féminin" };
 
-// Couleurs approximatives des paliers de niveau Faceit (1-10).
-const LEVEL_COLORS = {
-  1: "#eee", 2: "#eee", 3: "#eee",
-  4: "#ffc107", 5: "#ffc107", 6: "#ffc107",
-  7: "#fd7e14", 8: "#fd7e14", 9: "#fd7e14",
-  10: "#e63946",
-};
-
-function FaceitBadge({ steamId, levels }) {
+function FaceitBadge({ steamId, levels, loading }) {
   const entry = steamId ? levels[steamId] : null;
-  if (!entry || entry.level == null) return <span className="text-muted">—</span>;
+
+  if (loading && !entry) {
+    return <span className="text-muted">…</span>;
+  }
+  if (!entry || entry.level == null) {
+    return <span className="text-muted">—</span>;
+  }
+
   const badge = (
-    <span
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        width: 18,
-        height: 18,
-        borderRadius: 3,
-        background: LEVEL_COLORS[entry.level] || "#ccc",
-        color: entry.level >= 7 ? "#fff" : "#222",
-        fontSize: 10,
-        fontWeight: "bold",
-      }}
-      title={entry.elo != null ? `${entry.elo} elo` : ""}
-    >
-      {entry.level}
-    </span>
+    <img
+      src={`/ranks/cs2-faceit-${entry.level}.png`}
+      alt={`Niveau ${entry.level}`}
+      title={entry.elo != null ? `${entry.elo} elo` : `Niveau ${entry.level}`}
+      width={20}
+      height={20}
+    />
   );
+
   return entry.faceitUrl ? (
     <a href={entry.faceitUrl} target="_blank" rel="noreferrer">
       {badge}
@@ -51,7 +42,9 @@ function GameHub({ gameId, onOpenPlayer, onOpenMatch }) {
 
   const ladderPlayers = computeStandings(gameId, tab === "matchs" ? "mixte" : tab);
   const showFaceit = gameId === "cs2";
-  const faceitLevels = useFaceitLevels(showFaceit ? ladderPlayers.map((p) => p.steamId) : []);
+  const { levels: faceitLevels, loading: faceitLoading } = useFaceitLevels(
+    showFaceit ? ladderPlayers.map((p) => p.steamId) : []
+  );
 
   const gameMatches = matches
     .filter((m) => m.game === gameId && (tab === "matchs" || m.ladder === tab))
@@ -75,19 +68,19 @@ function GameHub({ gameId, onOpenPlayer, onOpenMatch }) {
           <table>
             <thead>
               <tr>
-                <th>joueur·se</th>
-                <th style={{ width: 60 }}>elo</th>
+                <th>Joueur·se</th>
+                <th style={{ width: 60 }}>Elo</th>
                 <th style={{ width: 40 }}>V</th>
                 <th style={{ width: 40 }}>D</th>
-                <th style={{ width: 50 }}>mvp</th>
-                {showFaceit && <th style={{ width: 50 }}>faceit</th>}
+                <th style={{ width: 50 }}>MVP</th>
+                {showFaceit && <th style={{ width: 50 }}>Faceit</th>}
               </tr>
             </thead>
             <tbody>
               {ladderPlayers.length === 0 && (
                 <tr>
                   <td colSpan={showFaceit ? 6 : 5} className="text-muted">
-                    personne sur ce ladder pour l'instant.
+                    Personne sur ce ladder pour l'instant.
                   </td>
                 </tr>
               )}
@@ -104,7 +97,7 @@ function GameHub({ gameId, onOpenPlayer, onOpenMatch }) {
                   <td>{p.mvps}</td>
                   {showFaceit && (
                     <td>
-                      <FaceitBadge steamId={p.steamId} levels={faceitLevels} />
+                      <FaceitBadge steamId={p.steamId} levels={faceitLevels} loading={faceitLoading} />
                     </td>
                   )}
                 </tr>
@@ -115,17 +108,17 @@ function GameHub({ gameId, onOpenPlayer, onOpenMatch }) {
           <table>
             <thead>
               <tr>
-                <th style={{ width: 90 }}>date</th>
-                <th>rencontre</th>
-                <th style={{ width: 70 }}>score</th>
-                <th style={{ width: 90 }}>map</th>
+                <th style={{ width: 90 }}>Date</th>
+                <th>Rencontre</th>
+                <th style={{ width: 70 }}>Score</th>
+                <th style={{ width: 90 }}>Map</th>
               </tr>
             </thead>
             <tbody>
               {gameMatches.length === 0 && (
                 <tr>
                   <td colSpan={4} className="text-muted">
-                    aucun match enregistré.
+                    Aucun match enregistré.
                   </td>
                 </tr>
               )}
@@ -152,8 +145,12 @@ function GameHub({ gameId, onOpenPlayer, onOpenMatch }) {
 // ── Écran 2 : profil d'une personne ────────────────────────────
 function PlayerProfile({ playerId, onBack, onOpenMatch }) {
   const p = getPlayerStanding(playerId);
-  const faceitLevels = useFaceitLevels(p?.game === "cs2" ? [p.steamId] : []);
-  if (!p) return <p className="text-xs">profil introuvable.</p>;
+  const isCS2 = p?.game === "cs2";
+  const { levels: faceitLevels, loading: faceitLoading } = useFaceitLevels(isCS2 ? [p.steamId] : []);
+  const { profiles: leetifyProfiles, loading: leetifyLoading } = useLeetifyProfiles(isCS2 ? [p.steamId] : []);
+  if (!p) return <p className="text-xs">Profil introuvable.</p>;
+
+  const leetify = p.steamId ? leetifyProfiles[p.steamId] : null;
 
   const recentMatches = matches
     .filter((m) => m.team1.players.includes(p.id) || m.team2.players.includes(p.id))
@@ -164,7 +161,7 @@ function PlayerProfile({ playerId, onBack, onOpenMatch }) {
     <div>
       <div className="comp-breadcrumb">
         <button type="button" onClick={onBack} className="link-box text-xs">
-          ← retour
+          ← Retour
         </button>
         <strong>{p.pseudo}</strong>
         <span className="text-xs text-muted">
@@ -175,35 +172,35 @@ function PlayerProfile({ playerId, onBack, onOpenMatch }) {
       <table className="mt-2">
         <tbody>
           <tr>
-            <td className="text-muted">elo</td>
+            <td className="text-muted">Elo</td>
             <td>{p.elo}</td>
           </tr>
           <tr>
-            <td className="text-muted">victoires</td>
+            <td className="text-muted">Victoires</td>
             <td>{p.wins}</td>
           </tr>
           <tr>
-            <td className="text-muted">défaites</td>
+            <td className="text-muted">Défaites</td>
             <td>{p.losses}</td>
           </tr>
           <tr>
-            <td className="text-muted">mvp de map</td>
+            <td className="text-muted">MVP de map</td>
             <td>{p.mvps}</td>
           </tr>
-          {p.game === "cs2" && (
+          {isCS2 && (
             <tr>
-              <td className="text-muted">faceit</td>
+              <td className="text-muted">Faceit</td>
               <td>
-                <FaceitBadge steamId={p.steamId} levels={faceitLevels} />
+                <FaceitBadge steamId={p.steamId} levels={faceitLevels} loading={faceitLoading} />
               </td>
             </tr>
           )}
           {p.steamId && (
             <tr>
-              <td className="text-muted">steam</td>
+              <td className="text-muted">Steam</td>
               <td>
                 <a href={`https://steamcommunity.com/profiles/${p.steamId}`} target="_blank" rel="noreferrer">
-                  profil
+                  Profil
                 </a>
               </td>
             </tr>
@@ -211,23 +208,67 @@ function PlayerProfile({ playerId, onBack, onOpenMatch }) {
         </tbody>
       </table>
 
-      <p className="mt-4 text-xs text-muted">derniers matchs</p>
+      {isCS2 && (
+        <fieldset className="mt-2">
+          <legend>Leetify</legend>
+          {leetifyLoading && !leetify ? (
+            <p className="text-xs text-muted">Chargement…</p>
+          ) : leetify ? (
+            <table>
+              <tbody>
+                <tr>
+                  <td className="text-muted">Rating</td>
+                  <td>{leetify.rating}</td>
+                </tr>
+                <tr>
+                  <td className="text-muted">Winrate</td>
+                  <td>{leetify.winrate != null ? `${Math.round(leetify.winrate * 100)}%` : "—"}</td>
+                </tr>
+                <tr>
+                  <td className="text-muted">Aim</td>
+                  <td>{leetify.aim}</td>
+                </tr>
+                <tr>
+                  <td className="text-muted">Positioning</td>
+                  <td>{leetify.positioning}</td>
+                </tr>
+                <tr>
+                  <td className="text-muted">Utility</td>
+                  <td>{leetify.utility}</td>
+                </tr>
+                <tr>
+                  <td className="text-muted">Clutch</td>
+                  <td>{leetify.clutch}</td>
+                </tr>
+                <tr>
+                  <td className="text-muted">Opening</td>
+                  <td>{leetify.opening}</td>
+                </tr>
+              </tbody>
+            </table>
+          ) : (
+            <p className="text-xs text-muted">Pas de données Leetify.</p>
+          )}
+        </fieldset>
+      )}
+
+      <p className="mt-4 text-xs text-muted">Derniers matchs</p>
       <table className="mt-1">
         <thead>
           <tr>
-            <th style={{ width: 90 }}>date</th>
-            <th>rencontre</th>
-            <th style={{ width: 70 }}>score</th>
+            <th style={{ width: 90 }}>Date</th>
+            <th>Rencontre</th>
+            <th style={{ width: 70 }}>Score</th>
             <th style={{ width: 45 }}>K</th>
             <th style={{ width: 45 }}>D</th>
-            <th style={{ width: 55 }}>rating</th>
+            <th style={{ width: 55 }}>Rating</th>
           </tr>
         </thead>
         <tbody>
           {recentMatches.length === 0 && (
             <tr>
               <td colSpan={6} className="text-muted">
-                aucun match pour l'instant.
+                Aucun match pour l'instant.
               </td>
             </tr>
           )}
@@ -262,10 +303,10 @@ function RoundsTab({ m }) {
     <table>
       <thead>
         <tr>
-          <th style={{ width: 50 }}>round</th>
-          <th>vainqueur</th>
-          <th>raison</th>
-          <th style={{ width: 70 }}>durée</th>
+          <th style={{ width: 50 }}>Round</th>
+          <th>Vainqueur</th>
+          <th>Raison</th>
+          <th style={{ width: 70 }}>Durée</th>
         </tr>
       </thead>
       <tbody>
@@ -287,11 +328,11 @@ function KillsTab({ m, pseudo, onOpenPlayer }) {
     <table>
       <thead>
         <tr>
-          <th style={{ width: 44 }}>round</th>
-          <th>tueur·se</th>
-          <th>arme</th>
-          <th>victime</th>
-          <th style={{ width: 34 }}>hs</th>
+          <th style={{ width: 44 }}>Round</th>
+          <th>Tueur·se</th>
+          <th>Arme</th>
+          <th>Victime</th>
+          <th style={{ width: 34 }}>HS</th>
         </tr>
       </thead>
       <tbody>
@@ -330,9 +371,9 @@ function WeaponsTab({ m }) {
     <table>
       <thead>
         <tr>
-          <th>arme</th>
-          <th style={{ width: 60 }}>kills</th>
-          <th style={{ width: 60 }}>hs%</th>
+          <th>Arme</th>
+          <th style={{ width: 60 }}>Kills</th>
+          <th style={{ width: 60 }}>HS%</th>
         </tr>
       </thead>
       <tbody>
@@ -388,7 +429,7 @@ function MatrixTab({ m, allPlayerIds, pseudo }) {
           ))}
         </tbody>
       </table>
-      <p className="text-xs text-muted mt-2">lignes = tueur·se, colonnes = victime</p>
+      <p className="text-xs text-muted mt-2">Lignes = tueur·se, colonnes = victime.</p>
     </div>
   );
 }
@@ -398,17 +439,17 @@ function ClutchesTab({ m, pseudo, onOpenPlayer }) {
     <table>
       <thead>
         <tr>
-          <th style={{ width: 50 }}>round</th>
-          <th>joueur·se</th>
-          <th style={{ width: 60 }}>situation</th>
-          <th style={{ width: 70 }}>résultat</th>
+          <th style={{ width: 50 }}>Round</th>
+          <th>Joueur·se</th>
+          <th style={{ width: 60 }}>Situation</th>
+          <th style={{ width: 70 }}>Résultat</th>
         </tr>
       </thead>
       <tbody>
         {m.clutches.length === 0 && (
           <tr>
             <td colSpan={4} className="text-muted">
-              aucun clutch tenté.
+              Aucun clutch tenté.
             </td>
           </tr>
         )}
@@ -421,7 +462,7 @@ function ClutchesTab({ m, pseudo, onOpenPlayer }) {
               </button>
             </td>
             <td>1v{c.opponents}</td>
-            <td>{c.won ? <span className="badge">gagné</span> : <span className="text-muted">perdu</span>}</td>
+            <td>{c.won ? <span className="badge">Gagné</span> : <span className="text-muted">Perdu</span>}</td>
           </tr>
         ))}
       </tbody>
@@ -433,7 +474,7 @@ function ClutchesTab({ m, pseudo, onOpenPlayer }) {
 function MatchDetail({ matchId, onBack, onOpenPlayer }) {
   const m = matches.find((mm) => mm.id === matchId);
   const [tab, setTab] = useState("resume");
-  if (!m) return <p className="text-xs">match introuvable.</p>;
+  if (!m) return <p className="text-xs">Match introuvable.</p>;
 
   const showFaceit = m.game === "cs2";
   const hasDetail = Boolean(m.rounds && m.kills && m.clutches);
@@ -454,21 +495,21 @@ function MatchDetail({ matchId, onBack, onOpenPlayer }) {
   ];
 
   function TeamTable({ team }) {
-    const faceitLevels = useFaceitLevels(
+    const { levels: faceitLevels, loading: faceitLoading } = useFaceitLevels(
       showFaceit ? team.players.map((pid) => players.find((pl) => pl.id === pid)?.steamId) : []
     );
     return (
       <table>
         <thead>
           <tr>
-            <th>joueur·se</th>
+            <th>Joueur·se</th>
             <th style={{ width: 32 }}>K</th>
             <th style={{ width: 32 }}>D</th>
             <th style={{ width: 32 }}>A</th>
             <th style={{ width: 48 }}>ADR</th>
             <th style={{ width: 40 }}>HS%</th>
-            <th style={{ width: 48 }}>rating</th>
-            {showFaceit && <th style={{ width: 44 }}>faceit</th>}
+            <th style={{ width: 48 }}>Rating</th>
+            {showFaceit && <th style={{ width: 44 }}>Faceit</th>}
           </tr>
         </thead>
         <tbody>
@@ -493,7 +534,7 @@ function MatchDetail({ matchId, onBack, onOpenPlayer }) {
                 </td>
                 {showFaceit && (
                   <td>
-                    <FaceitBadge steamId={p?.steamId} levels={faceitLevels} />
+                    <FaceitBadge steamId={p?.steamId} levels={faceitLevels} loading={faceitLoading} />
                   </td>
                 )}
               </tr>
@@ -508,7 +549,7 @@ function MatchDetail({ matchId, onBack, onOpenPlayer }) {
     <div>
       <div className="comp-breadcrumb">
         <button type="button" onClick={onBack} className="link-box text-xs">
-          ← retour
+          ← Retour
         </button>
         <strong>{m.map}</strong>
         <span className="text-xs text-muted">
